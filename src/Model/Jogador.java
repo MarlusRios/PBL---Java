@@ -8,9 +8,7 @@ public class Jogador {
     private double motivacao;
     private int saude;
     private double dinheiro;
-    private int desempenhoSoftware;
-    private int desempenhoHardware;
-    private int desempenhoMat;
+    private int desempenho;
     private int andamento;
     private int posx;
     private int posy;
