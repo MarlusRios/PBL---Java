@@ -10,7 +10,6 @@ public class Jogador {
     private int saude;
     private double dinheiro;
     private int desempenho;
-    private int andamento;
     private int posx;
     private int posy;
     private int loc;
