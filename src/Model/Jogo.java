@@ -5,6 +5,6 @@ public class Jogo {
     private int mes;
     private int semestre;
     private Jogador player;
-
+    private boolean examTime;
 
 }
