@@ -142,12 +142,12 @@ public class Jogador {
         switch (seta) {
             case "cima" -> {
                 if (map.getCelula(posx, posy - 1) == 3) {
-                    map.getNpcNaPosicao(posx, posy - 1).interacao(this);
+                    map.getNpcNaPosicao(posx, posy + 1).interacao(this);
                 }
             }
             case "baixo" -> {
                 if (map.getCelula(posx, posy + 1) == 3) {
-                    map.getNpcNaPosicao(posx, posy + 1).interacao(this);
+                    map.getNpcNaPosicao(posx, posy - 1).interacao(this);
                 }
             }
             case "esquerda" -> {
