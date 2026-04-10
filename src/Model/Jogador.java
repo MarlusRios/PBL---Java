@@ -102,15 +102,6 @@ public class Jogador {
     }
 
 
-    public int getAndamento() {
-        return andamento;
-    }
-
-    public void setAndamento(int andamento) {
-        this.andamento = andamento;
-    }
-
-
     public int getPosx() {
         return posx;
     }
@@ -137,30 +128,14 @@ public class Jogador {
         this.loc = loc;
     }
 
-    //fazer um if para verificar a posição, ver se está na borda ou se esta na frente de um npc antes de chamar esse metodo//
-    public void interagir(MiniMapa map){
-        switch (seta) {
-            case "cima" -> {
-                if (map.getCelula(posx, posy - 1) == 3) {
-                    map.getNpcNaPosicao(posx, posy + 1).interacao(this);
-                }
-            }
-            case "baixo" -> {
-                if (map.getCelula(posx, posy + 1) == 3) {
-                    map.getNpcNaPosicao(posx, posy - 1).interacao(this);
-                }
-            }
-            case "esquerda" -> {
-                if (map.getCelula(posx - 1, posy) == 3) {
-                    map.getNpcNaPosicao(posx - 1, posy).interacao(this);
-                }
-            }
-            case "direita" -> {
-                if (map.getCelula(posx + 1, posy) == 3) {
-                    map.getNpcNaPosicao(posx + 1, posy).interacao(this);
-                }
-            }
-        }
+
+    public void setSeta(String seta){
+        this.seta = seta;
+    }
+
+    public String getSeta(){
+        return this.seta;
     }
 
 }
+
