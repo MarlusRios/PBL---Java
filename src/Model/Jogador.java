@@ -5,7 +5,10 @@ public class Jogador {
     private String nome;
     private int[] aparencia = new int[2];
     private double energia;
-    private double conhecimento;
+    private double conhecimentoCalc;
+    private double conhecimentoSoft;
+    private double conhecimentoHard;
+    private double conhecimentoTcc;
     private double motivacao;
     private int saude;
     private double dinheiro;
@@ -20,7 +23,6 @@ public class Jogador {
         aparencia[0] = cabelo;
         aparencia[1] = sexo;
         energia = 100.0;
-        conhecimento = 100.0;
         motivacao = 100.0;
         saude = 100;
         dinheiro = 2000.0;
@@ -58,12 +60,26 @@ public class Jogador {
     }
 
 
-    public double getConhecimento() {
-        return conhecimento;
-    }
+    public double getConhecimentoCalc() { return conhecimentoCalc; }
 
-    public void setConhecimento(double conhecimento) {
-        this.conhecimento = conhecimento;
+    public void setConhecimentoCalc(double conhecimentoCalc) { this.conhecimentoCalc = conhecimentoCalc; }
+
+    public double getConhecimentoSoft() { return conhecimentoSoft; }
+
+    public void setConhecimentoSoft(double conhecimentoSoft) { this.conhecimentoSoft = conhecimentoSoft; }
+
+    public double getConhecimentoHard() { return conhecimentoHard; }
+
+    public void setConhecimentoHard(double conhecimentoHard) { this.conhecimentoHard = conhecimentoHard; }
+
+    public double getConhecimentoTcc() { return conhecimentoTcc; }
+
+    public void setConhecimentoTcc(double conhecimentoTcc) { this.conhecimentoTcc = conhecimentoTcc; }
+
+    public void setConhecimento(double conhecimento){
+        this.conhecimentoCalc += conhecimento;
+        this.conhecimentoSoft += conhecimento;
+        this.conhecimentoHard += conhecimento;
     }
 
     public double getMotivacao() {

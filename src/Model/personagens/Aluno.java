@@ -10,7 +10,7 @@ public class Aluno extends Npc {
     @Override
     public void interacao(Jogador jogador){
         if (jogador.getEnergia() >= 2) {
-            jogador.setConhecimento(jogador.getConhecimento() + 2.0);
+            jogador.setConhecimento(2.0);
             jogador.setEnergia(jogador.getEnergia() - 2.0);
             jogador.setMotivacao(jogador.getMotivacao() + 10.0);
         }
@@ -18,7 +18,7 @@ public class Aluno extends Npc {
 
     public void ensinar(Jogador jogador){
         if (jogador.getEnergia() >= 2) {
-            jogador.setConhecimento(jogador.getConhecimento() + 10.0);
+            jogador.setConhecimento(10.0);
             jogador.setMotivacao(jogador.getMotivacao() + 20.0);
             jogador.setEnergia(jogador.getEnergia() - 4.0);
         }

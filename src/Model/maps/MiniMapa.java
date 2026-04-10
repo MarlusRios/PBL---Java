@@ -1,4 +1,4 @@
-//isso aqui vai virar uma classe que a gente usa herança
+//isso aqui vai virar uma classe que a gente usa herança//
 
 package Model.maps;
 
@@ -14,9 +14,8 @@ public class MiniMapa {
     private int posInicialX;
     private int posInicialY;
 
-    public MiniMapa(int id, String nome, int linhas, int colunas) {
+    public MiniMapa(int id, int linhas, int colunas) {
         this.id = id;
-        this.nome = nome;
         this.matriz = new int[linhas][colunas];
         this.npcs = new HashMap<>();
     }
@@ -31,6 +30,12 @@ public class MiniMapa {
     public int getCelula(int x, int y) {
         return matriz[y][x];
     }
+
+    public int getId(){ return id; }
+
+    public void setNome(String nome){ this.nome = nome; }
+
+    public String getNome(){ return nome; }
 
     public void setCelula(int x, int y, int valor) {
         matriz[y][x] = valor;

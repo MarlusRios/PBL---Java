@@ -1,3 +1,5 @@
+package Model.personagens;
+
 import Model.Jogador;
 import Model.personagens.Npc;
 
@@ -9,11 +11,7 @@ public class Maeli extends Npc {
 
     @Override
     public void interacao (Jogador jogador){
-        if (jogador.getEnergia() >= 5) {
-            jogador.setConhecimento(jogador.getConhecimento() + 5.0);
-            jogador.setEnergia(jogador.getEnergia() - 5.0);
-            jogador.setMotivacao(jogador.getMotivacao() + 5.0);
-        }
+        //printar o tutorial//
     }
 
 }
