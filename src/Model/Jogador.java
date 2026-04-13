@@ -25,7 +25,7 @@ public class Jogador {
         energia = 100.0;
         motivacao = 100.0;
         saude = 100;
-        dinheiro = 2000.0;
+        dinheiro = 00.0;
         posx = -1;
         posy = -1;
         loc = -1;
