@@ -2,7 +2,7 @@
 
 package Model.maps;
 
-import Model.personagens.Npc;
+import Model.personagens.Interagiveis;
 
 import java.util.HashMap;
 
@@ -10,20 +10,20 @@ public class MiniMapa {
     private int id;
     private String nome;
     private int[][] matriz;
-    private HashMap<String, Npc> npcs;
+    private HashMap<String, Interagiveis> interagiveis;
     private int posInicialX;
     private int posInicialY;
 
     public MiniMapa(int id, int linhas, int colunas) {
         this.id = id;
         this.matriz = new int[linhas][colunas];
-        this.npcs = new HashMap<>();
+        this.interagiveis = new HashMap<>();
     }
 
-    public void adicionarNpc(Npc npc) {
-        String chave = npc.getPosx() + "," + npc.getPosy();
-        matriz[npc.getPosy()][npc.getPosx()] = npc.getId();
-        npcs.put(chave, npc);
+    public void adicionarInter(Interagiveis interagiveis) {
+        String chave = interagiveis.getPosx() + "," + interagiveis.getPosy();
+        matriz[interagiveis.getPosy()][interagiveis.getPosx()] = interagiveis.getId();
+        this.interagiveis.put(chave, interagiveis);
     }
 
 
@@ -41,13 +41,13 @@ public class MiniMapa {
         matriz[y][x] = valor;
     }
 
-    public Npc getNpcNaPosicao(int x, int y) {
-        return npcs.get(x + "," + y);
+    public Interagiveis getInterNaPosicao(int x, int y) {
+        return interagiveis.get(x + "," + y);
     }
 
-    public void removerNpc(int x, int y) {
+    public void removerInter(int x, int y) {
         matriz[y][x] = 0;
-        npcs.remove(x + "," + y);
+        interagiveis.remove(x + "," + y);
     }
 
     public boolean posValid(int x, int y) {

@@ -1,14 +1,11 @@
 package Model.personagens;
 
 import Model.Jogador;
-import Model.personagens.Npc;
 
-public class Professor extends Npc {
-    private String materia;
+public class Professor extends Interagiveis {
 
-    public Professor (int id, String nome, int posx, int posy, int loc, String materia){
+    public Professor (int id, String nome, int posx, int posy, int loc){
         super(id, nome, posx, posy, loc);
-        this.materia = materia;
     }
 
     @Override

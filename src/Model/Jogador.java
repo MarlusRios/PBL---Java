@@ -5,14 +5,13 @@ public class Jogador {
     private String nome;
     private int[] aparencia = new int[2];
     private double energia;
-    private double conhecimentoCalc;
-    private double conhecimentoSoft;
-    private double conhecimentoHard;
-    private double conhecimentoTcc;
+    private static final int MAX = 100;
+    private double conhecimento;
     private double motivacao;
     private int saude;
     private double dinheiro;
-    private int desempenho;
+    private double desempenho;
+    private int andamento;
     private int posx;
     private int posy;
     private int loc;
@@ -59,27 +58,10 @@ public class Jogador {
         this.energia = energia;
     }
 
-
-    public double getConhecimentoCalc() { return conhecimentoCalc; }
-
-    public void setConhecimentoCalc(double conhecimentoCalc) { this.conhecimentoCalc = conhecimentoCalc; }
-
-    public double getConhecimentoSoft() { return conhecimentoSoft; }
-
-    public void setConhecimentoSoft(double conhecimentoSoft) { this.conhecimentoSoft = conhecimentoSoft; }
-
-    public double getConhecimentoHard() { return conhecimentoHard; }
-
-    public void setConhecimentoHard(double conhecimentoHard) { this.conhecimentoHard = conhecimentoHard; }
-
-    public double getConhecimentoTcc() { return conhecimentoTcc; }
-
-    public void setConhecimentoTcc(double conhecimentoTcc) { this.conhecimentoTcc = conhecimentoTcc; }
+    public double getConhecimento() { return conhecimento; }
 
     public void setConhecimento(double conhecimento){
-        this.conhecimentoCalc += conhecimento;
-        this.conhecimentoSoft += conhecimento;
-        this.conhecimentoHard += conhecimento;
+        this.conhecimento = Math.max(0, Math.min(conhecimento, MAX));
     }
 
     public double getMotivacao() {
@@ -87,7 +69,7 @@ public class Jogador {
     }
 
     public void setMotivacao(double motivacao) {
-        this.motivacao = motivacao;
+        this.motivacao = Math.max(0, Math.min(motivacao, MAX));
     }
 
 
@@ -95,8 +77,8 @@ public class Jogador {
         return saude;
     }
 
-    public void setSaude(int saude) {
-        this.saude = saude;
+    public void setSaude(int vida) {
+        this.saude = Math.max(0, Math.min(vida, MAX));
     }
 
 
@@ -104,16 +86,14 @@ public class Jogador {
         return dinheiro;
     }
 
-    public void setDinheiro(double dinheiro) {
-        this.dinheiro = dinheiro;
-    }
+    public void setDinheiro(double dinheiro) { this.dinheiro = dinheiro; }
 
 
-    public int getDesempenho() {
+    public double getDesempenho() {
         return desempenho;
     }
 
-    public void setDesempenho(int desempenho) {
+    public void setDesempenho(double desempenho) {
         this.desempenho = desempenho;
     }
 
@@ -153,5 +133,13 @@ public class Jogador {
         return this.seta;
     }
 
+
+    public int getAndamento() {
+            return andamento;
+    }
+
+    public void setAndamento(int andamento) {
+        this.andamento = andamento;
+    }
 }
 

@@ -4,13 +4,12 @@ import Model.Eventos.Aleatorio;
 import Model.Eventos.Aleatorios.FilaGrande;
 import Model.Jogador;
 import Model.Jogo;
-import Model.personagens.Npc;
 
-public class VendedorCantina extends Npc {
+public class VendedorCantina extends Interagiveis {
 
     Aleatorio filaGrande = new FilaGrande();
-    public VendedorCantina (int id, String nome, int posx, int posy, int loc){
-        super(id, nome, posx, posy, loc);
+    public VendedorCantina (int id, int posx, int posy){
+        super(id, "vendedor", posx, posy, 3);
     }
 
     @Override

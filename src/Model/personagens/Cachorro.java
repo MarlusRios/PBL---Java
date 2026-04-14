@@ -4,12 +4,12 @@ import Model.Eventos.Aleatorio;
 import Model.Eventos.Aleatorios.Mordida;
 import Model.Jogador;
 
-public class Cachorro extends Npc {
+public class Cachorro extends Interagiveis {
 
     Aleatorio mordida = new Mordida();
 
-    public Cachorro (int id,String nome, int posx, int posy, int loc){
-        super (id, nome, posx, posy, loc);
+    public Cachorro (int id, int posx, int posy, int loc){
+        super (id, "cachorro", posx, posy, loc);
     }
 
     @Override

@@ -2,21 +2,24 @@ package Model.personagens;
 
 import Model.Jogador;
 import Model.Jogo;
+import Service.JogoService;
 
-public abstract class Npc {
+public abstract class Interagiveis {
     private int  id;
     private String nome;
     private int posx;
     private int posy;
     private int loc;
 
-    public Npc (int id, String nome, int posx, int posy, int loc ){
+    public Interagiveis(int id, String nome, int posx, int posy, int loc ){
         this.id = id;
         this.nome = nome;
         this.posx = posx;
         this.posy = posy;
         this.loc = loc;
     }
+
+    public void interacao(Jogo jogo, JogoService jogoService){}
 
     public  void interacao (Jogador jogador){}
 

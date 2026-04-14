@@ -1,11 +1,12 @@
 package Service;
 
+import Model.Eventos.Obrigatorios.FazerProva1;
+import Model.Eventos.Obrigatorios.FazerProva2;
+import Model.Jogo;
+import Model.Eventos.Obrigatorio;
 import Model.Jogador;
 import Model.maps.MiniMapa;
-import Model.personagens.Aluno;
-import Model.personagens.Cachorro;
-import Model.personagens.Gato;
-import Model.personagens.Npc;
+import Model.personagens.Interagiveis;
 
 public class JogadorService {
 
@@ -33,9 +34,9 @@ public class JogadorService {
     public void executarInteracao(Jogador player, MiniMapa map, int x, int y) {
         if (map.posValid(x, y)) {
             if (map.getCelula(x, y) == 3) {
-                Npc npc = map.getNpcNaPosicao(x, y);
-                if (npc != null) {
-                    npc.interacao(player);
+                Interagiveis interagiveis = map.getNpcNaPosicao(x, y);
+                if (interagiveis != null) {
+                    interagiveis.interacao(player);
                 }
             }
         }
@@ -53,6 +54,16 @@ public class JogadorService {
             jogador.setPosy(y-1);
         }else if (direcao == 'd' && mapa.posValid(x, y+1) && mapa.getCelula(x, y+1) == 0 ){
             jogador.setPosy(y+1);
+        }
+    }
+
+    public void Prova(Jogo jogo){
+        if(jogo.getSemana() == 4)   {
+            Obrigatorio prova = new FazerProva1();
+            prova.aplicarEvento(jogo.getPlayer());
+        }else if(jogo.getSemana() == 8){
+            Obrigatorio prova = new FazerProva2();
+            prova.aplicarEvento(jogo.getPlayer());
         }
     }
 }

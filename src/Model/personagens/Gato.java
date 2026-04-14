@@ -3,11 +3,11 @@ package Model.personagens;
 import Model.Eventos.Aleatorio;
 import Model.Eventos.Aleatorios.Arranhao;
 import Model.Jogador;
-public class Gato extends Npc {
+public class Gato extends Interagiveis {
 
     Aleatorio arranhao = new Arranhao();
-    public Gato (int id, String nome, int posx, int posy, int loc){
-        super (id, nome, posx, posy, loc);
+    public Gato (int id, int posx, int posy, int loc){
+        super (id, "gato", posx, posy, loc);
     }
 
     @Override
