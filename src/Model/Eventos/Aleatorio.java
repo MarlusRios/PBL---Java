@@ -1,6 +1,7 @@
 package Model.Eventos;
 
 import Model.Jogador;
+import Model.Jogo;
 
 public abstract class Aleatorio {
     private double probabilidade;
@@ -11,7 +12,9 @@ public abstract class Aleatorio {
 
     public double getProbabilidade(){ return probabilidade; }
 
-    public abstract void aplicarEvento(Jogador jogador);
+    public void aplicarEvento(Jogador jogador){}
+
+    public void aplicarEvento(Jogador jogador, Jogo jogo){}
 
     public boolean acontece(){
         return Math.random()<probabilidade;

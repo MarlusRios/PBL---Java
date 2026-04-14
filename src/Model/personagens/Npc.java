@@ -1,6 +1,7 @@
 package Model.personagens;
 
 import Model.Jogador;
+import Model.Jogo;
 
 public abstract class Npc {
     private int  id;
@@ -17,7 +18,9 @@ public abstract class Npc {
         this.loc = loc;
     }
 
-    public abstract void interacao (Jogador jogador);
+    public  void interacao (Jogador jogador){}
+
+    public void interacao (Jogador jogador, Jogo jogo){}
 
     public String getNome() { return nome; }
     public int getPosx() { return posx; }
