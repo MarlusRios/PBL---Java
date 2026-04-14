@@ -40,4 +40,19 @@ public class JogadorService {
             }
         }
     }
+
+    public void mover(Jogador jogador, char direcao, MiniMapa mapa){
+        int x = jogador.getPosx();
+        int y = jogador.getPosy();
+
+        if (direcao == 'w' && mapa.posValid(x-1, y) && mapa.getCelula(x-1, y) == 0 ){
+            jogador.setPosx(x-1);
+        } else if (direcao == 's' && mapa.posValid(x+1, y) && mapa.getCelula(x+1, y) == 0 ){
+            jogador.setPosx(x+1);
+        }else if (direcao == 'a' && mapa.posValid(x, y-1) && mapa.getCelula(x, y-1) == 0 ){
+            jogador.setPosy(y-1);
+        }else if (direcao == 'd' && mapa.posValid(x, y+1) && mapa.getCelula(x, y+1) == 0 ){
+            jogador.setPosy(y+1);
+        }
+    }
 }
