@@ -3,12 +3,18 @@ package Service;
 import Model.Jogo;
 import Model.Jogador;
 import Model.maps.Map;
+import Repository.JogoRepository;
 
 public class JogoService {
 
+    private JogoRepository jogoRepository = new JogoRepository();
+
     // Cria uma nova partida
     public Jogo criarJogo(String id, String nomeJogador, int cabelo, int sexo, Map mapa, MapService mapService, InteragiveisService interagiveisService) {
-        return new Jogo(id, nomeJogador, cabelo, sexo, mapService.preencherMinimapas(mapa, interagiveisService));
+        Jogo jogo = new Jogo(id, nomeJogador, cabelo, sexo, mapService.preencherMinimapas(mapa, interagiveisService));
+        jogoRepository.salvar(jogo);
+        return jogo;
+
 
     }
 
@@ -96,7 +102,7 @@ public class JogoService {
         jogador.setEnergia(100.0);
         jogador.setMotivacao(100.0);
         jogador.setSaude(100);
-        // dinheiro não reseta
+        jogador.setDinheiro(jogador.getDinheiro() + 300);
     }
 
     public boolean verificarFimDoDia(Jogo jogo) {
