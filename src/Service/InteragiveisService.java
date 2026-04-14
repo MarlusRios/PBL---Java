@@ -3,9 +3,9 @@ package Service;
 import Model.maps.MiniMapa;
 import Model.personagens.Interagiveis;
 
-public class NpcService {
+public class InteragiveisService {
 
-    public void moverNpc(Interagiveis interagiveis, MiniMapa map, int newx, int newy){
+    public void moverInter(Interagiveis interagiveis, MiniMapa map, int newx, int newy){
         if(map.posValid(newx, newy)){
             if(map.getCelula(newx, newy) == 0){
                 map.setCelula(interagiveis.getPosx(), interagiveis.getPosy(), 0);
@@ -16,11 +16,12 @@ public class NpcService {
         }
     }
 
-    public void adicionarNpc(MiniMapa map, Interagiveis interagiveis){
-        map.adicionarNpc(interagiveis);
+    public void adicionarInter(MiniMapa map, Interagiveis interagiveis){
+        map.adicionarInter(interagiveis);
     }
 
-    public void removerNpc(MiniMapa map, Interagiveis interagiveis){
-        map.removerNpc(interagiveis.getPosx(), interagiveis.getPosy());
+
+    public void removerInter(MiniMapa map, Interagiveis interagiveis){
+        map.removerInter(interagiveis.getPosx(), interagiveis.getPosy());
     }
 }

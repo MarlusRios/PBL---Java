@@ -1,5 +1,7 @@
 package Model;
 
+import Model.maps.Map;
+import Service.MapService;
 public class Jogo {
     private String id;
     private double time;
@@ -7,15 +9,19 @@ public class Jogo {
     private int semestre;
     private Jogador player;
     private boolean examTime;
+    private Map mapa;
 
-    public Jogo(String id, String nomeJogador, int cabelo, int sexo) {
+    public Jogo(String id, String nomeJogador, int cabelo, int sexo, Map mapa) {
         this.id = id;
         this.player = new Jogador(nomeJogador, cabelo, sexo);
         this.time = 7.0;
         this.semana = 1;
         this.semestre = 1;
         this.examTime = false;
+        this.mapa = mapa;
     }
+
+    public Map getMapa(){return mapa;}
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }

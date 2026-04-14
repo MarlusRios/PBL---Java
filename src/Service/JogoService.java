@@ -2,21 +2,54 @@ package Service;
 
 import Model.Jogo;
 import Model.Jogador;
+import Model.maps.Map;
 
 public class JogoService {
 
     // Cria uma nova partida
-    public Jogo criarJogo(String id, String nomeJogador, int cabelo, int sexo) {
-        return new Jogo(id, nomeJogador, cabelo, sexo);
+    public Jogo criarJogo(String id, String nomeJogador, int cabelo, int sexo, Map mapa, MapService mapService, InteragiveisService interagiveisService) {
+        return new Jogo(id, nomeJogador, cabelo, sexo, mapService.preencherMinimapas(mapa, interagiveisService));
+
+    }
+
+    public void rodarJogo(Jogo jogo, JogadorService jogadorService, InteragiveisService interagiveisService) throws InterruptedException{
+        Jogador jogador = jogo.getPlayer();
+        while (!verificarFimDoDia(jogo)) {
+            atualizarJogo(jogo, jogadorService, interagiveisService);
+
+            Thread.sleep(30000); //1/2 minuto
+             jogo.setTime(jogo.getTime()+0.5); // avança 1 unidade de tempo no jogo
+        }
+        encerrarDia(jogo);
+    }
+
+    // metodo para atualizar e verificar as possiveis
+    public void atualizarJogo(Jogo jogo, JogadorService jogadorService, InteragiveisService interagiveisService){
+        Jogador jogador = jogo.getPlayer();
+        Map mapa = jogo.getMapa();
+
+         if(jogo.getTime() >= 9.5 && jogo.getTime() <= 10.2 || jogo.getTime()>= 14 && jogo.getTime() <= 14.7) { //ver se está no horario da aula
+
+             if (jogadorService.naSala(jogador)) {
+                 if (jogo.isExamTime()) {
+                     jogadorService.Prova(jogo);
+                 } else {
+                    jogadorService.interagir(jogador ,mapa.getMinimapa(4));
+                 }
+             }
+         }
+         jogador.setEnergia(jogador.getEnergia() - 1);
+         jogador.setMotivacao(jogador.getMotivacao() - 1);
     }
 
     // Chamado quando o jogador entra no ônibus ou passa das 19h
     public void encerrarDia(Jogo jogo) {
         avancarSemana(jogo);
-        resetarAtributos(jogo.getPlayer());
+        fimDoDia(jogo.getPlayer());
         jogo.setTime(7.0); // novo dia começa às 7h
     }
 
+    //metodo para o avanço do dia (semana)
     public void avancarSemana(Jogo jogo) {
         int semanaAtual = jogo.getSemana();
 
@@ -32,6 +65,10 @@ public class JogoService {
         } else {
             jogo.setSemana(semanaAtual + 1);
         }
+    }
+
+    public void fimDoDia(Jogador jogador){
+        jogador.setEnergia(100);
     }
 
     public void avancarSemestre(Jogo jogo) {

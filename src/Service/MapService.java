@@ -5,23 +5,47 @@ import Model.personagens.*;
 
 public class MapService {
 
-    public void preencherMinimapas(Map mapa){
+    public Map preencherMinimapas(Map mapa, InteragiveisService interagiveisService){
         //algoritmo para preencher os mapas, ex: cantina e colegiado//
-        MiniMapa cantina = criarCantina();
-        MiniMapa colegiado = criarColegiado();
-        MiniMapa corredor1 = criarCorredor1();
-        MiniMapa corredor2 = criarCorredor2();
-        MiniMapa corredor3 = criarCorredor3();
-        MiniMapa sala = criarSala();
+        MiniMapa cantina = criarCantina(interagiveisService);
+        mapa.add(cantina, 2);
+        MiniMapa colegiado = criarColegiado(interagiveisService);
+        mapa.add(colegiado, 7);
+        MiniMapa corredor1 = criarCorredor1(interagiveisService);
+        mapa.add(corredor1, 1);
+        MiniMapa corredor2 = criarCorredor2(interagiveisService);
+        mapa.add(corredor2, 3);
+        MiniMapa corredor3 = criarCorredor3(interagiveisService);
+        mapa.add(corredor3, 5);
+        MiniMapa sala = criarSala(interagiveisService);
+        mapa.add(sala, 4);
+        MiniMapa lab = criarLaboratorio(interagiveisService);
+        mapa.add(lab, 6);
+        MiniMapa ponto = criarPonto(interagiveisService);
+        mapa.add(ponto, 0);
+        return mapa;
     }
 
-    public MiniMapa criarCantina(){
+    public MiniMapa criarPonto(InteragiveisService interagiveisService){
+        MiniMapa ponto = new MiniMapa(30, 30, 30);
+        for(int y = 3; y<=4; y++){
+            for (int x = 21; x<= 24; x++){
+                Interagiveis cobrador = new CobradorOnibus(3, x, y);
+                interagiveisService.adicionarInter(ponto, cobrador);
+            }
+        }
+        ponto.setCelula(15,29,31);
+        ponto.setCelula(14,29,31);
+        return ponto;
+    }
+
+    public MiniMapa criarCantina(InteragiveisService interagiveisService){
         MiniMapa cantina = new MiniMapa(32, 30, 30);
         for (int y = 9; y <= 19; y++) {
             for (int x = 24; x <= 29; x++) {
                 if (y == 9 || y == 19 || x == 24 || x == 29) {
                     Interagiveis vendedor = new VendedorCantina(3,x,y);
-                    cantina.adicionarInter(vendedor);
+                    interagiveisService.adicionarInter(cantina,vendedor);
                 }
             }
         }
@@ -32,13 +56,13 @@ public class MapService {
         return cantina;
     }
 
-    public MiniMapa criarColegiado(){
+    public MiniMapa criarColegiado(InteragiveisService interagiveisService){
         MiniMapa colegiado = new MiniMapa(38, 30, 30);
         for (int y = 24; y <=29; y++) {
             for (int x = 9; x <= 19; x++) {
                 if (x == 9 || x == 19 || y == 24 || y == 29) {
                     Interagiveis maeli = new Maeli(3,x,y);
-                    colegiado.adicionarInter(maeli);
+                    interagiveisService.adicionarInter(colegiado, maeli);
                 }
             }
         }
@@ -47,42 +71,60 @@ public class MapService {
         return colegiado;
     }
 
-    public MiniMapa criarCorredor1(){
+    public MiniMapa criarCorredor1(InteragiveisService interagiveisService){
         MiniMapa corredor = new MiniMapa(31, 10, 30);
         corredor.setCelula(5, 0, 30);
         corredor.setCelula(4,0,30);
         corredor.setCelula(5, 29, 32);
         corredor.setCelula(4, 29, 32);
-        Interagiveis dog = new Cachorro(3, 3, 16, 1);
+        Interagiveis dog = new Cachorro(3, 3, 16, 2);
+        interagiveisService.adicionarInter(corredor,dog);
         return corredor;
     }
 
-    public MiniMapa criarCorredor2(){
+    public MiniMapa criarCorredor2(InteragiveisService interagiveisService){
         MiniMapa corredor = new MiniMapa(33, 10, 30);
         corredor.setCelula(5, 0, 32);
         corredor.setCelula(4,0,32);
         corredor.setCelula(5, 29, 34);
         corredor.setCelula(4, 29, 34);
-        Interagiveis cat = new Gato(3, 3, 16, 3);
+        Interagiveis cat = new Gato(3, 3, 16, 4);
+        interagiveisService.adicionarInter(corredor, cat);
         return corredor;
     }
 
-    public MiniMapa criarCorredor3(){
+    public MiniMapa criarCorredor3(InteragiveisService interagiveisService){
         MiniMapa corredor = new MiniMapa(35, 10, 30);
         corredor.setCelula(5, 0, 34);
         corredor.setCelula(4,0,34);
         corredor.setCelula(5, 29, 36);
         corredor.setCelula(4, 29, 36);
-        Interagiveis dog = new Cachorro(3, 3, 16, 1);
+        Interagiveis dog = new Cachorro(3, 3, 16, 6);
+        interagiveisService.adicionarInter(corredor,dog);
         return corredor;
     }
 
-    public MiniMapa criarSala(){
+    public MiniMapa criarSala(InteragiveisService interagiveisService){
         MiniMapa sala = new MiniMapa(34, 30, 30);
         sala.setCelula(15, 0, 33);
         sala.setCelula(14,0,33);
         sala.setCelula(15, 29, 35);
         sala.setCelula(14, 29, 35);
+        Interagiveis professor = new Professor(3, "Felipe", 2, 15, 5);
+        interagiveisService.adicionarInter(sala, professor);
         return sala;
+    }
+
+    public MiniMapa criarLaboratorio(InteragiveisService interagiveisService){
+        MiniMapa lab = new MiniMapa(36, 30, 30);
+        lab.setCelula(15, 0, 35);
+        lab.setCelula(14, 0, 35);
+        lab.setCelula(15, 29, 37);
+        lab.setCelula(14, 29, 37);
+        Interagiveis professor = new Professor(3, "Gustavo", 24, 2, 7);
+        Interagiveis aluno = new Aluno(3, "Nando", 22, 20, 7);
+        interagiveisService.adicionarInter(lab,aluno);
+        interagiveisService.adicionarInter(lab,professor);
+        return lab;
     }
 }

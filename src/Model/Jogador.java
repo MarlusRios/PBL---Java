@@ -25,8 +25,8 @@ public class Jogador {
         motivacao = 100.0;
         saude = 100;
         dinheiro = 300.0;
-        posx = -1;
-        posy = -1;
+        posx = 15;
+        posy = 1;
         loc = -1;
         seta = "cima";
 

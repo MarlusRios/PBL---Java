@@ -17,6 +17,7 @@ public class VendedorCantina extends Interagiveis {
         jogador.setSaude(jogador.getSaude() + 10);
         jogador.setEnergia(jogador.getEnergia() + 10);
         jogador.setDinheiro(jogador.getDinheiro() - 20);
+        jogador.setMotivacao(jogador.getMotivacao() + 10);
         if(filaGrande.acontece()){
             filaGrande.aplicarEvento(jogador, jogo);
         }

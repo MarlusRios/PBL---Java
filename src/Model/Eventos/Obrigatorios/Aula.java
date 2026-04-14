@@ -7,6 +7,8 @@ public class Aula extends Obrigatorio {
 
     @Override
     public void aplicarEvento(Jogador jogador){
+
         jogador.setConhecimento(jogador.getConhecimento() + 25);
+        jogador.setEnergia(jogador.getEnergia() - 30);
     }
 }
