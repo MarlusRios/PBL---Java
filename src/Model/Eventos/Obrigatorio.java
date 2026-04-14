@@ -1,4 +1,5 @@
 package Model.Eventos;
 
-public class Obrigatorio {
+public abstract class Obrigatorio {
+
 }

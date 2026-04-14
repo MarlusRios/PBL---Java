@@ -1,8 +1,11 @@
 package Model.personagens;
 
+import Model.Eventos.Aleatorio;
+import Model.Eventos.Aleatorios.Arranhao;
 import Model.Jogador;
 public class Gato extends Npc {
 
+    Aleatorio arranhao = new Arranhao();
     public Gato (int id, String nome, int posx, int posy, int loc){
         super (id, nome, posx, posy, loc);
     }
@@ -13,13 +16,8 @@ public class Gato extends Npc {
             jogador.setMotivacao(jogador.getMotivacao() + 0.5);
             jogador.setEnergia(jogador.getEnergia() - 0.2);
         }
-    }
-
-    public void arranhao (Jogador jogador){
-        if (jogador.getEnergia() >= 0.2) {
-            jogador.setMotivacao(jogador.getMotivacao() - 10);
-            jogador.setSaude(jogador.getSaude() - 5);
-            jogador.setEnergia(jogador.getEnergia()- 0.2);
+        if(arranhao.acontece()){
+            arranhao.aplicarEvento(jogador);
         }
     }
 }
