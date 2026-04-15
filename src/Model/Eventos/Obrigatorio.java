@@ -12,20 +12,23 @@ public abstract class Obrigatorio {
         this.semestreDeOcorrencia = semestreDeOcorrencia;
     }
 
+    //metodo de verificação se o tempo do evento vai acontecer
+    public boolean deveOcorrer(Jogo jogo) {
+        return jogo.getSemana() == semanaDeOcorrencia && jogo.getSemestre() == semestreDeOcorrencia;
+    }
+
+    // metodos a serem subscritos por herança/polimorfismo
+    public void aplicarEvento(Jogador jogador, Jogo jogo){}
+
+    public void aplicarEvento(Jogador jogador){}
+
     public Obrigatorio(int semanaDeOcorrencia){
         this.semanaDeOcorrencia = semanaDeOcorrencia;
     }
 
     public Obrigatorio() {}
 
-    public boolean deveOcorrer(Jogo jogo) {
-        return jogo.getSemana() == semanaDeOcorrencia && jogo.getSemestre() == semestreDeOcorrencia;
-    }
-
-    public void aplicarEvento(Jogador jogador, Jogo jogo){}
-
-    public void aplicarEvento(Jogador jogador){}
-
+    //getters e setters
     public int getSemanaDeOcorrencia() { return semanaDeOcorrencia; }
     public int getSemestreDeOcorrencia() { return semestreDeOcorrencia; }
 }

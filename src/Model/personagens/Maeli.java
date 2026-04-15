@@ -10,7 +10,7 @@ public class Maeli extends Interagiveis {
 
     @Override
     public void interacao (Jogador jogador){
-        //printar o tutorial
+        //printar o tutorial(implementaremos na 3 fase)
     }
 
 }

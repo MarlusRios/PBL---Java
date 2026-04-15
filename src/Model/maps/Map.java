@@ -7,6 +7,7 @@ public class Map {
         list = new MiniMapa[8];
     }
 
+    //getters e setters
     public MiniMapa[] getList() {
         return list;
     }
@@ -20,6 +21,7 @@ public class Map {
          return null;
     }
 
+    // metodos para adicionar um mapa na posição
     public void add(MiniMapa mapa, int pos){
         list[pos] = mapa;
     }

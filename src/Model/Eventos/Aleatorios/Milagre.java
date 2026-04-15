@@ -9,7 +9,7 @@ public class Milagre extends Aleatorio {
         super(0.1);
     }
 
-    @Override
+    @Override//metodo de milagre academico, adiciona conhecimento ao jogador
     public void aplicarEvento(Jogador jogador){
         jogador.setConhecimento(jogador.getConhecimento()+50);
     }

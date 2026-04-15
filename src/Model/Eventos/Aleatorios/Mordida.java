@@ -9,7 +9,7 @@ public class Mordida extends Aleatorio {
         super(0.03);
     }
 
-    @Override
+    @Override//metodo de mudança de atributos do jogador ao acariciar um cachorro
     public void aplicarEvento(Jogador jogador){
         jogador.setMotivacao(jogador.getMotivacao() - 10);
         jogador.setSaude(jogador.getSaude() - 5);

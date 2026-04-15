@@ -9,7 +9,7 @@ public class opressao extends Aleatorio {
         super(0.1);
     }
 
-    @Override
+    @Override//metodo de mudança de atributos do jogador ao conversar com um professor
     public void aplicarEvento(Jogador jogador){
         jogador.setMotivacao(jogador.getMotivacao() - 20);
         jogador.setEnergia(jogador.getEnergia()- 10);

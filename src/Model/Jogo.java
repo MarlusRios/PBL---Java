@@ -21,6 +21,8 @@ public class Jogo {
         this.mapa = mapa;
     }
 
+
+    //getters e setters
     public Map getMapa(){return mapa;}
 
     public String getId() { return id; }

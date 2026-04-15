@@ -14,7 +14,7 @@ public class Professor extends Interagiveis {
         super(id, nome, posx, posy, loc);
     }
 
-    @Override
+    @Override // interação com o professor contendo dois eventos, um aleatorio e um obrigatorio modificando os atributos do jogador
     public void interacao (Jogador jogador){
         if(getLoc() == 5){
             aula.aplicarEvento(jogador);

@@ -32,6 +32,7 @@ public class Jogador {
 
     }
 
+    //getters e setters
     public String getNome() {
         return nome;
     }

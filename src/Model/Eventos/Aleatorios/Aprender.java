@@ -9,7 +9,7 @@ public class Aprender extends Aleatorio {
         super(0.1);
     }
 
-    @Override
+    @Override //metodo de mudança de atributos do jogador ao conversar com um aluno
     public void aplicarEvento(Jogador jogador){
         jogador.setConhecimento(jogador.getConhecimento()+ 10);
         jogador.setMotivacao(jogador.getMotivacao() + 20.0);

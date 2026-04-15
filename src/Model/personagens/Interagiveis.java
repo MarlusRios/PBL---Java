@@ -19,12 +19,14 @@ public abstract class Interagiveis {
         this.loc = loc;
     }
 
+    //metodos que serão sobrescritos
     public void interacao(Jogo jogo, JogoService jogoService){}
 
     public  void interacao (Jogador jogador){}
 
     public void interacao (Jogador jogador, Jogo jogo){}
 
+    //getters e setters
     public String getNome() { return nome; }
     public int getPosx() { return posx; }
     public int getPosy() { return posy; }

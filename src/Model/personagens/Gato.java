@@ -10,7 +10,7 @@ public class Gato extends Interagiveis {
         super (id, "gato", posx, posy, loc);
     }
 
-    @Override
+    @Override // interação com o jogador e tendo um evento aleatorio modificando os atributos do jogador
     public void interacao(Jogador jogador) {
         if (jogador.getEnergia() >= 0.2) {
             jogador.setMotivacao(jogador.getMotivacao() + 0.5);

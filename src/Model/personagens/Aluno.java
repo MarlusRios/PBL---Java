@@ -10,7 +10,7 @@ public class Aluno extends Interagiveis {
         super (id, nome, posx, posy, loc);
     }
 
-    @Override
+    @Override //interação com o jogador e um evento aleatorio modificando os atributos do jogador
     public void interacao(Jogador jogador){
         if (jogador.getEnergia() >= 2) {
             jogador.setConhecimento(jogador.getConhecimento() + 2.0);

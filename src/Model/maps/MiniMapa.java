@@ -20,13 +20,37 @@ public class MiniMapa {
         this.interagiveis = new HashMap<>();
     }
 
+    // metodo que adiciona o interagivel no minimapa e no hashmap
     public void adicionarInter(Interagiveis interagiveis) {
         String chave = interagiveis.getPosx() + "," + interagiveis.getPosy();
         matriz[interagiveis.getPosy()][interagiveis.getPosx()] = interagiveis.getId();
         this.interagiveis.put(chave, interagiveis);
     }
 
+    // metodo que remove o interagivel do minimapa e do hashmap
+    public void removerInter(int x, int y) {
+        matriz[y][x] = 0;
+        interagiveis.remove(x + "," + y);
+    }
 
+    //metodo que verifica se a posição consultada está dentro do mapa
+    public boolean posValid(int x, int y) {
+        if (y < 0) {
+            return false;
+        }
+        if (y >= matriz.length) {
+            return false;
+        }
+        if (x < 0) {
+            return false;
+        }
+        if (x >= matriz[0].length) {
+            return false;
+        }
+        return true;
+    }
+
+    //gettes e setters
     public int getCelula(int x, int y) {
         return matriz[y][x];
     }
@@ -43,26 +67,5 @@ public class MiniMapa {
 
     public Interagiveis getInterNaPosicao(int x, int y) {
         return interagiveis.get(x + "," + y);
-    }
-
-    public void removerInter(int x, int y) {
-        matriz[y][x] = 0;
-        interagiveis.remove(x + "," + y);
-    }
-
-    public boolean posValid(int x, int y) {
-        if (y < 0) {
-            return false;
-        }
-        if (y >= matriz.length) {
-            return false;
-        }
-        if (x < 0) {
-            return false;
-        }
-        if (x >= matriz[0].length) {
-            return false;
-        }
-        return true;
     }
 }

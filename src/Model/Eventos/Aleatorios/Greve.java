@@ -10,7 +10,7 @@ public class Greve extends Aleatorio {
         super (0.01);
     }
 
-    @Override
+    @Override //metodo para aplicar a grave
     public void aplicarEvento(JogoService jogoService, Jogo jogo){
         jogoService.avancarSemestre(jogo);
     }

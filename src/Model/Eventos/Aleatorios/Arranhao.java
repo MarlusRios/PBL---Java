@@ -8,7 +8,7 @@ public class Arranhao extends Aleatorio {
         super(0.04);
     }
 
-    @Override
+    @Override //metodo de mudança de atributos do jogador ao acariciar um gato
     public void aplicarEvento(Jogador jogador){
         jogador.setMotivacao(jogador.getMotivacao() - 10);
         jogador.setSaude(jogador.getSaude() - 5);
