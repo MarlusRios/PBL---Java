@@ -11,7 +11,7 @@ import Model.personagens.Interagiveis;
 import java.security.PublicKey;
 
 public class JogadorService {
-    //
+    //metodo para interagir com o interagivel e verificar se é possivel pela posição
     public void interagir(Jogador player, MiniMapa map) {
 
         int x = player.getPosx();
@@ -32,6 +32,7 @@ public class JogadorService {
             }
         }
     }
+
     //metodo para interagir com os Interagiveis e aplicar suas consequencias
     public void executarInteracao(Jogador player, MiniMapa map, int x, int y) {
         if (map.posValid(x, y)) {
@@ -44,7 +45,7 @@ public class JogadorService {
         }
     }
 
-    //metodo para movimentação do jogador
+    //metodo para movimentação do jogador no mapa e entre mapas
     public void mover(Jogador jogador, char direcao, MiniMapa mapa){
         int x = jogador.getPosx();
         int y = jogador.getPosy();
@@ -95,6 +96,7 @@ public class JogadorService {
         }
     }
 
+    //saber se está na sala de aula
     public boolean naSala(Jogador jogador){
         return jogador.getLoc() == 4;
     }

@@ -14,10 +14,9 @@ public class JogoService {
         Jogo jogo = new Jogo(id, nomeJogador, cabelo, sexo, mapService.preencherMinimapas(mapa, interagiveisService));
         jogoRepository.salvar(jogo);
         return jogo;
-
-
     }
 
+    //metodo para atualizar o jogo e aplicar a passagem de tempo e suas consequencias no jogador
     public void rodarJogo(Jogo jogo, JogadorService jogadorService, InteragiveisService interagiveisService) throws InterruptedException{
         Jogador jogador = jogo.getPlayer();
         while (!verificarFimDoDia(jogo)) {
@@ -29,7 +28,7 @@ public class JogoService {
         encerrarDia(jogo);
     }
 
-    // metodo para atualizar e verificar as possiveis
+    // metodo para atualizar e verificar as possiveis possibilidades de eventos
     public void atualizarJogo(Jogo jogo, JogadorService jogadorService, InteragiveisService interagiveisService){
         Jogador jogador = jogo.getPlayer();
         Map mapa = jogo.getMapa();
@@ -73,16 +72,17 @@ public class JogoService {
         }
     }
 
+    //metodo para resetar a energia do jogador ao fim do dia
     public void fimDoDia(Jogador jogador){
         jogador.setEnergia(100);
     }
 
+    //metodo para avançar o semestre e verificar se o jogador se formou
     public void avancarSemestre(Jogo jogo) {
         int semestreAtual = jogo.getSemestre();
         Jogador jogador = jogo.getPlayer();
 
         if (jogador.getAndamento() >= 5) {
-            // jogador passou no ultimo semestre
             encerrarJogo(jogo);
         } else {
             if(jogador.getDesempenho()>= 7){
@@ -98,6 +98,7 @@ public class JogoService {
         }
     }
 
+    //metodo para resetar os atributos e adicionar dinheiro no fim do semestre
     private void resetarAtributos(Jogador jogador) {
         jogador.setEnergia(100.0);
         jogador.setMotivacao(100.0);
@@ -105,14 +106,17 @@ public class JogoService {
         jogador.setDinheiro(jogador.getDinheiro() + 300);
     }
 
+    //metodo para verificar se passou das 19hrs
     public boolean verificarFimDoDia(Jogo jogo) {
         return jogo.getTime() >= 19.0;
     }
 
+    //metodo para verificar se o jogador se formou
     public boolean verificarFormatura(Jogo jogo) {
         return jogo.getPlayer().getAndamento() > 5;
     }
 
+    //encerrar o jogo
     private void encerrarJogo(Jogo jogo) {
         jogo.setSemestre(6);
     }

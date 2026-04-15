@@ -26,6 +26,7 @@ public class MapService {
         return mapa;
     }
 
+    //metodo para criar o ponto de onibus
     public MiniMapa criarPonto(InteragiveisService interagiveisService){
         MiniMapa ponto = new MiniMapa(30, 30, 30);
         for(int y = 3; y<=4; y++){
@@ -39,6 +40,7 @@ public class MapService {
         return ponto;
     }
 
+    //metodo para criar a cantina
     public MiniMapa criarCantina(InteragiveisService interagiveisService){
         MiniMapa cantina = new MiniMapa(32, 30, 30);
         for (int y = 9; y <= 19; y++) {
@@ -56,6 +58,7 @@ public class MapService {
         return cantina;
     }
 
+    //metodo para criar o colegiado
     public MiniMapa criarColegiado(InteragiveisService interagiveisService){
         MiniMapa colegiado = new MiniMapa(38, 30, 30);
         for (int y = 24; y <=29; y++) {
@@ -71,8 +74,9 @@ public class MapService {
         return colegiado;
     }
 
+    //metodo para criar o corredor
     public MiniMapa criarCorredor1(InteragiveisService interagiveisService){
-        MiniMapa corredor = new MiniMapa(31, 10, 30);
+        MiniMapa corredor = new MiniMapa(31, 30, 30);
         corredor.setCelula(5, 0, 30);
         corredor.setCelula(4,0,30);
         corredor.setCelula(5, 29, 32);
@@ -82,8 +86,9 @@ public class MapService {
         return corredor;
     }
 
+    //metodo para criar o corredor
     public MiniMapa criarCorredor2(InteragiveisService interagiveisService){
-        MiniMapa corredor = new MiniMapa(33, 10, 30);
+        MiniMapa corredor = new MiniMapa(33, 30, 30);
         corredor.setCelula(5, 0, 32);
         corredor.setCelula(4,0,32);
         corredor.setCelula(5, 29, 34);
@@ -93,8 +98,9 @@ public class MapService {
         return corredor;
     }
 
+    //metodo para criar o corredor
     public MiniMapa criarCorredor3(InteragiveisService interagiveisService){
-        MiniMapa corredor = new MiniMapa(35, 10, 30);
+        MiniMapa corredor = new MiniMapa(35, 30, 30);
         corredor.setCelula(5, 0, 34);
         corredor.setCelula(4,0,34);
         corredor.setCelula(5, 29, 36);
@@ -104,6 +110,7 @@ public class MapService {
         return corredor;
     }
 
+    //metodo para criar a sala
     public MiniMapa criarSala(InteragiveisService interagiveisService){
         MiniMapa sala = new MiniMapa(34, 30, 30);
         sala.setCelula(15, 0, 33);
@@ -115,6 +122,7 @@ public class MapService {
         return sala;
     }
 
+    //metodo para criar o labooratorio
     public MiniMapa criarLaboratorio(InteragiveisService interagiveisService){
         MiniMapa lab = new MiniMapa(36, 30, 30);
         lab.setCelula(15, 0, 35);
