@@ -1,15 +1,21 @@
 package Model;
 
 import Model.maps.Map;
-import Service.MapService;
-public class Jogo {
+
+import java.io.Serial;
+import java.io.Serializable;
+
+public class Jogo implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private String id;
     private double time;
     private int semana;
     private int semestre;
     private Jogador player;
     private boolean examTime;
-    private Map mapa;
+    private transient Map mapa;
 
     public Jogo(String id, String nomeJogador, int cabelo, int sexo, Map mapa) {
         this.id = id;

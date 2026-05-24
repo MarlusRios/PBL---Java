@@ -1,9 +1,13 @@
 package Model;
 
-import Model.maps.MiniMapa;
-public class Jogador {
+import java.io.Serial;
+import java.io.Serializable;
+
+public class Jogador implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private String nome;
-    private int[] aparencia = new int[2];
     private double energia;
     private static final int MAX = 100;
     private double conhecimento;
@@ -17,10 +21,8 @@ public class Jogador {
     private int loc;
     private String seta;
 
-    public Jogador(String nome, int cabelo, int sexo) {
-        this.nome = nome;
-        aparencia[0] = cabelo;
-        aparencia[1] = sexo;
+    public Jogador() {
+        this.nome = "Luiza";
         energia = 100.0;
         motivacao = 100.0;
         saude = 100;
@@ -39,16 +41,6 @@ public class Jogador {
 
     public void setNome(String nome) {
         this.nome = nome;
-    }
-
-
-    public int[] getAparencia() {
-        return aparencia;
-    }
-
-    public void setAparencia(int cabelo, int sexo) {
-        aparencia[0] = cabelo;
-        aparencia[1] = sexo;
     }
 
     public double getEnergia() {
