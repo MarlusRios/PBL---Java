@@ -5,29 +5,31 @@ import Model.personagens.*;
 
 public class MapService {
 
-    public Map preencherMinimapas(Map mapa, InteragiveisService interagiveisService){
+    private final InteragiveisService interagiveisService = new InteragiveisService();
+
+    public Map preencherMinimapas(Map mapa){
         //algoritmo para preencher os mapas, ex: cantina e colegiado//
-        MiniMapa cantina = criarCantina(interagiveisService);
+        MiniMapa cantina = criarCantina();
         mapa.add(cantina, 2);
-        MiniMapa colegiado = criarColegiado(interagiveisService);
+        MiniMapa colegiado = criarColegiado();
         mapa.add(colegiado, 7);
-        MiniMapa corredor1 = criarCorredor1(interagiveisService);
+        MiniMapa corredor1 = criarCorredor1();
         mapa.add(corredor1, 1);
-        MiniMapa corredor2 = criarCorredor2(interagiveisService);
+        MiniMapa corredor2 = criarCorredor2();
         mapa.add(corredor2, 3);
-        MiniMapa corredor3 = criarCorredor3(interagiveisService);
+        MiniMapa corredor3 = criarCorredor3();
         mapa.add(corredor3, 5);
-        MiniMapa sala = criarSala(interagiveisService);
+        MiniMapa sala = criarSala();
         mapa.add(sala, 4);
-        MiniMapa lab = criarLaboratorio(interagiveisService);
+        MiniMapa lab = criarLaboratorio();
         mapa.add(lab, 6);
-        MiniMapa ponto = criarPonto(interagiveisService);
+        MiniMapa ponto = criarPonto();
         mapa.add(ponto, 0);
         return mapa;
     }
 
     //metodo para criar o ponto de onibus
-    public MiniMapa criarPonto(InteragiveisService interagiveisService){
+    public MiniMapa criarPonto(){
         MiniMapa ponto = new MiniMapa(30, 30, 30);
         for(int y = 3; y<=4; y++){
             for (int x = 21; x<= 24; x++){
@@ -41,7 +43,7 @@ public class MapService {
     }
 
     //metodo para criar a cantina
-    public MiniMapa criarCantina(InteragiveisService interagiveisService){
+    public MiniMapa criarCantina(){
         MiniMapa cantina = new MiniMapa(32, 30, 30);
         for (int y = 9; y <= 19; y++) {
             for (int x = 24; x <= 29; x++) {
@@ -59,7 +61,7 @@ public class MapService {
     }
 
     //metodo para criar o colegiado
-    public MiniMapa criarColegiado(InteragiveisService interagiveisService){
+    public MiniMapa criarColegiado(){
         MiniMapa colegiado = new MiniMapa(38, 30, 30);
         for (int y = 24; y <=29; y++) {
             for (int x = 9; x <= 19; x++) {
@@ -75,7 +77,7 @@ public class MapService {
     }
 
     //metodo para criar o corredor
-    public MiniMapa criarCorredor1(InteragiveisService interagiveisService){
+    public MiniMapa criarCorredor1(){
         MiniMapa corredor = new MiniMapa(31, 30, 30);
         corredor.setCelula(5, 0, 30);
         corredor.setCelula(4,0,30);
@@ -87,7 +89,7 @@ public class MapService {
     }
 
     //metodo para criar o corredor
-    public MiniMapa criarCorredor2(InteragiveisService interagiveisService){
+    public MiniMapa criarCorredor2( ){
         MiniMapa corredor = new MiniMapa(33, 30, 30);
         corredor.setCelula(5, 0, 32);
         corredor.setCelula(4,0,32);
@@ -99,7 +101,7 @@ public class MapService {
     }
 
     //metodo para criar o corredor
-    public MiniMapa criarCorredor3(InteragiveisService interagiveisService){
+    public MiniMapa criarCorredor3(){
         MiniMapa corredor = new MiniMapa(35, 30, 30);
         corredor.setCelula(5, 0, 34);
         corredor.setCelula(4,0,34);
@@ -111,7 +113,7 @@ public class MapService {
     }
 
     //metodo para criar a sala
-    public MiniMapa criarSala(InteragiveisService interagiveisService){
+    public MiniMapa criarSala( ){
         MiniMapa sala = new MiniMapa(34, 30, 30);
         sala.setCelula(15, 0, 33);
         sala.setCelula(14,0,33);
@@ -123,7 +125,7 @@ public class MapService {
     }
 
     //metodo para criar o labooratorio
-    public MiniMapa criarLaboratorio(InteragiveisService interagiveisService){
+    public MiniMapa criarLaboratorio(){
         MiniMapa lab = new MiniMapa(36, 30, 30);
         lab.setCelula(15, 0, 35);
         lab.setCelula(14, 0, 35);

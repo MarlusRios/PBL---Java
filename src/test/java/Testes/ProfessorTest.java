@@ -1,3 +1,5 @@
+package Testes;
+
 import org.junit.*;
 import static org.junit.Assert.*;
 import Model.Jogador;
@@ -10,7 +12,7 @@ public class ProfessorTest {
     @Test
     public void testInteracaoNaSalaAumentaConhecimento() {
         Professor professor = new Professor(1, "Felipe", 2, 15, 5);
-        Jogador jogador = new Jogador("Player", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setEnergia(100.0);
         jogador.setConhecimento(0.0);
 
@@ -22,7 +24,7 @@ public class ProfessorTest {
     @Test
     public void testInteracaoNaSalaReduzEnergia() {
         Professor professor = new Professor(1, "Felipe", 2, 15, 5);
-        Jogador jogador = new Jogador("Player", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setEnergia(100.0);
 
         professor.interacao(jogador);
@@ -33,7 +35,7 @@ public class ProfessorTest {
     @Test
     public void testInteracaoNaSalaComEnergiaInsuficienteAindaAplicaAula() {
         Professor professor = new Professor(1, "Felipe", 2, 15, 5);
-        Jogador jogador = new Jogador("Player", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setEnergia(10.0);
         jogador.setConhecimento(0.0);
 
@@ -48,7 +50,7 @@ public class ProfessorTest {
     @Test
     public void testInteracaoForaDaSalaDefineConhecimento() {
         Professor professor = new Professor(1, "Felipe", 2, 15, 3);
-        Jogador jogador = new Jogador("Player", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setEnergia(50.0);
 
         professor.interacao(jogador);
@@ -59,7 +61,7 @@ public class ProfessorTest {
     @Test
     public void testInteracaoForaDaSalaReduzEnergia() {
         Professor professor = new Professor(1, "Felipe", 2, 15, 3);
-        Jogador jogador = new Jogador("Player", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setEnergia(50.0);
 
         professor.interacao(jogador);
@@ -70,7 +72,7 @@ public class ProfessorTest {
     @Test
     public void testInteracaoForaDaSalaAumentaMotivacao() {
         Professor professor = new Professor(1, "Felipe", 2, 15, 3);
-        Jogador jogador = new Jogador("Player", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setEnergia(50.0);
         jogador.setMotivacao(40.0);
 
@@ -84,7 +86,7 @@ public class ProfessorTest {
     @Test
     public void testInteracaoForaDaSalaSemEnergiaNaoAltera() {
         Professor professor = new Professor(1, "Felipe", 2, 15, 3);
-        Jogador jogador = new Jogador("Player", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setEnergia(4.0);
         double conhecimentoAntes = jogador.getConhecimento();
         double motivacaoAntes = jogador.getMotivacao();
@@ -99,7 +101,7 @@ public class ProfessorTest {
     @Test
     public void testInteracaoForaDaSalaEnergiaExatamente5Permitida() {
         Professor professor = new Professor(1, "Felipe", 2, 15, 3);
-        Jogador jogador = new Jogador("Player", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setEnergia(5.0);
 
         professor.interacao(jogador);

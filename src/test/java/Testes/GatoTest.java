@@ -1,3 +1,5 @@
+package Testes;
+
 import org.junit.*;
 import static org.junit.Assert.*;
 import Model.Jogador;
@@ -10,7 +12,7 @@ public class GatoTest {
     @Test
     public void testInteracaoAumentaMotivacao() {
         Gato gato = new Gato(1, 5, 5, 1);
-        Jogador jogador = new Jogador("Player", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setEnergia(50.0);
         jogador.setMotivacao(50.0);
 
@@ -22,7 +24,7 @@ public class GatoTest {
     @Test
     public void testInteracaoReduzEnergia() {
         Gato gato = new Gato(1, 5, 5, 1);
-        Jogador jogador = new Jogador("Player", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setEnergia(50.0);
 
         gato.interacao(jogador);
@@ -33,7 +35,7 @@ public class GatoTest {
     @Test
     public void testInteracaoEnergiaExatamente02Permitida() {
         Gato gato = new Gato(1, 5, 5, 1);
-        Jogador jogador = new Jogador("Player", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setEnergia(0.2);
         jogador.setMotivacao(50.0);
 
@@ -47,7 +49,7 @@ public class GatoTest {
     @Test
     public void testInteracaoSemEnergiaNaoAumentaMotivacao() {
         Gato gato = new Gato(1, 5, 5, 1);
-        Jogador jogador = new Jogador("Player", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setEnergia(0.1);
         jogador.setMotivacao(50.0);
 
@@ -59,7 +61,7 @@ public class GatoTest {
     @Test
     public void testInteracaoSemEnergiaNaoAlteraEnergia() {
         Gato gato = new Gato(1, 5, 5, 1);
-        Jogador jogador = new Jogador("Player", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setEnergia(0.0);
 
         gato.interacao(jogador);

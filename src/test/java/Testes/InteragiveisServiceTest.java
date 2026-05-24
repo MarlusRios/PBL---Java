@@ -1,3 +1,5 @@
+package Testes;
+
 import org.junit.*;
 import static org.junit.Assert.*;
 import Model.maps.MiniMapa;

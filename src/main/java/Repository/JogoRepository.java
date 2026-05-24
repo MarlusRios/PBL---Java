@@ -10,7 +10,7 @@ import java.util.HashMap;
 
 public class JogoRepository {
 
-    private static final String CAMINHO = "saves.ser";
+    private static final String CAMINHO = System.getProperty("user.dir")  + "/Bixo_Quest/Saves/saves.ser";
     private HashMap<String, Jogo> jogos = new HashMap<>();
 
     // carrega os saves do arquivo ao iniciar
@@ -18,15 +18,9 @@ public class JogoRepository {
         try (ObjectInputStream inputData = new ObjectInputStream(new FileInputStream(CAMINHO))) {
             jogos = (HashMap<String, Jogo>) inputData.readObject();
         } catch (FileNotFoundException e) {
-            Platform.runLater(() -> {
-                Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle("Aviso");
-                alert.setHeaderText(null);
-                alert.setContentText("Nenhum save encontrado!");
-                alert.showAndWait();
-            });
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
+            System.out.println("arquivo não encontrado");
+        } catch (IOException | ClassNotFoundException except) {
+            except.printStackTrace();
         }
     }
 
@@ -61,8 +55,12 @@ public class JogoRepository {
     private void persistir() {
         try (ObjectOutputStream outputData = new ObjectOutputStream(new FileOutputStream(CAMINHO))) {
             outputData.writeObject(jogos);
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException except) {
+            except.printStackTrace(); // joga no console o caminho dos erros
         }
+    }
+
+    public String proximoId() {
+        return String.valueOf(jogos.size() + 1);
     }
 }

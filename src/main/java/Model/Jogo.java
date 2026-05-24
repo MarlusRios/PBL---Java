@@ -17,9 +17,9 @@ public class Jogo implements Serializable {
     private boolean examTime;
     private transient Map mapa;
 
-    public Jogo(String id, String nomeJogador, int cabelo, int sexo, Map mapa) {
+    public Jogo(String id, Map mapa) {
         this.id = id;
-        this.player = new Jogador(nomeJogador, cabelo, sexo);
+        this.player = new Jogador();
         this.time = 7.0;
         this.semana = 1;
         this.semestre = 1;
@@ -30,6 +30,10 @@ public class Jogo implements Serializable {
 
     //getters e setters
     public Map getMapa(){return mapa;}
+
+    public void setMapa(Map novoMapa){
+        this.mapa = novoMapa;
+    }
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }

@@ -1,3 +1,5 @@
+package Testes;
+
 import org.junit.*;
 import static org.junit.Assert.*;
 import Model.Jogador;
@@ -21,21 +23,21 @@ public class JogadorServiceTest {
 
     @Test
     public void testNaSalaRetornaTrueQuandoLoc4() {
-        Jogador jogador = new Jogador("P", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setLoc(4);
         assertTrue(service.naSala(jogador));
     }
 
     @Test
     public void testNaSalaRetornaFalseQuandoLocDiferente() {
-        Jogador jogador = new Jogador("P", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setLoc(3);
         assertFalse(service.naSala(jogador));
     }
 
     @Test
     public void testNaSalaRetornaFalseLocNegativo() {
-        Jogador jogador = new Jogador("P", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setLoc(-1);
         assertFalse(service.naSala(jogador));
     }
@@ -45,7 +47,7 @@ public class JogadorServiceTest {
     @Test
     public void testExecutarInteracaoComInteragiveisNaPosicao() {
         MiniMapa mapa = novoMapa();
-        Jogador jogador = new Jogador("P", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setEnergia(50.0);
         Interagiveis aluno = new Aluno(3, "Nando", 2, 2, 1);
         mapa.adicionarInter(aluno);
@@ -59,7 +61,7 @@ public class JogadorServiceTest {
     @Test
     public void testExecutarInteracaoComCelulaVaziaNaoAltera() {
         MiniMapa mapa = novoMapa();
-        Jogador jogador = new Jogador("P", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setEnergia(50.0);
         double conhecimentoAntes = jogador.getConhecimento();
 
@@ -71,7 +73,7 @@ public class JogadorServiceTest {
     @Test
     public void testExecutarInteracaoPosicaoInvalidaNaoAltera() {
         MiniMapa mapa = novoMapa();
-        Jogador jogador = new Jogador("P", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setEnergia(50.0);
         double conhecimentoAntes = jogador.getConhecimento();
 
@@ -85,7 +87,7 @@ public class JogadorServiceTest {
     @Test
     public void testInteragirSetaCimaChamaInteracaoAcima() {
         MiniMapa mapa = novoMapa();
-        Jogador jogador = new Jogador("P", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setPosx(5);
         jogador.setPosy(5);
         jogador.setSeta("cima");
@@ -102,7 +104,7 @@ public class JogadorServiceTest {
     @Test
     public void testInteragirSetaBaixoChamaInteracaoAbaixo() {
         MiniMapa mapa = novoMapa();
-        Jogador jogador = new Jogador("P", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setPosx(5);
         jogador.setPosy(5);
         jogador.setSeta("baixo");
@@ -120,9 +122,9 @@ public class JogadorServiceTest {
 
     @Test
     public void testProvaSemana4CalculaDesempenho() {
-        Jogador jogador = new Jogador("P", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setConhecimento(80.0);
-        Jogo jogo = new Jogo("id1", "P", 0, 0, new Map());
+        Jogo jogo = new Jogo("id1", new Map());
         jogo.setSemana(4);
         jogo.setPlayer(jogador);
 
@@ -132,10 +134,10 @@ public class JogadorServiceTest {
 
     @Test
     public void testProvaSemana8CalculaDesempenhoMedio() {
-        Jogador jogador = new Jogador("P", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setConhecimento(60.0);
         jogador.setDesempenho(8.0);
-        Jogo jogo = new Jogo("id1", "P", 0, 0, new Map());
+        Jogo jogo = new Jogo("id1", new Map());
         jogo.setSemana(8);
         jogo.setPlayer(jogador);
 
@@ -145,10 +147,10 @@ public class JogadorServiceTest {
 
     @Test
     public void testProvaSemanaOutraNaoFazNada() {
-        Jogador jogador = new Jogador("P", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setConhecimento(50.0);
         jogador.setDesempenho(0.0);
-        Jogo jogo = new Jogo("id1", "P", 0, 0, new Map());
+        Jogo jogo = new Jogo("id1", new Map());
         jogo.setSemana(3);
         jogo.setPlayer(jogador);
 
@@ -162,7 +164,7 @@ public class JogadorServiceTest {
     @Test
     public void testMoverWMovePosxMenos1() {
         MiniMapa mapa = novoMapa();
-        Jogador jogador = new Jogador("P", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setPosx(5);
         jogador.setPosy(5);
 
@@ -174,7 +176,7 @@ public class JogadorServiceTest {
     @Test
     public void testMoverSMovePosxMais1() {
         MiniMapa mapa = novoMapa();
-        Jogador jogador = new Jogador("P", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setPosx(5);
         jogador.setPosy(5);
 
@@ -186,7 +188,7 @@ public class JogadorServiceTest {
     @Test
     public void testMoverAMovePosy() {
         MiniMapa mapa = novoMapa();
-        Jogador jogador = new Jogador("P", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setPosx(5);
         jogador.setPosy(5);
 
@@ -198,7 +200,7 @@ public class JogadorServiceTest {
     @Test
     public void testMoverDMovePosy() {
         MiniMapa mapa = novoMapa();
-        Jogador jogador = new Jogador("P", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setPosx(5);
         jogador.setPosy(5);
 
@@ -211,7 +213,7 @@ public class JogadorServiceTest {
     public void testMoverNaoMoveSeCelulaOcupada() {
         MiniMapa mapa = novoMapa();
         mapa.setCelula(4, 5, 99);
-        Jogador jogador = new Jogador("P", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setPosx(5);
         jogador.setPosy(5);
 

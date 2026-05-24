@@ -1,3 +1,5 @@
+package Testes;
+
 import org.junit.*;
 import static org.junit.Assert.*;
 import Model.Jogador;
@@ -8,11 +10,11 @@ import Model.personagens.VendedorCantina;
 public class VendedorCantinaTest {
 
     private Jogador novoJogador() {
-        return new Jogador("Player", 0, 0);
+        return new Jogador();
     }
 
     private Jogo novoJogo() {
-        return new Jogo("id1", "Player", 0, 0, new Map());
+        return new Jogo("id1", new Map());
     }
 
     //Efeitos base garantidos

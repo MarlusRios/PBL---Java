@@ -1,3 +1,5 @@
+package Testes;
+
 import org.junit.*;
 import static org.junit.Assert.*;
 import Model.Jogador;
@@ -10,7 +12,7 @@ public class CachorroTest {
     @Test
     public void testInteracaoAumentaMotivacao() {
         Cachorro cachorro = new Cachorro(1, 5, 5, 1);
-        Jogador jogador = new Jogador("Player", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setEnergia(50.0);
         jogador.setMotivacao(50.0);
 
@@ -22,7 +24,7 @@ public class CachorroTest {
     @Test
     public void testInteracaoReduzEnergia() {
         Cachorro cachorro = new Cachorro(1, 5, 5, 1);
-        Jogador jogador = new Jogador("Player", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setEnergia(50.0);
 
         cachorro.interacao(jogador);
@@ -33,7 +35,7 @@ public class CachorroTest {
     @Test
     public void testInteracaoEnergiaExatamente02Permitida() {
         Cachorro cachorro = new Cachorro(1, 5, 5, 1);
-        Jogador jogador = new Jogador("Player", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setEnergia(0.2);
         jogador.setMotivacao(50.0);
 
@@ -47,7 +49,7 @@ public class CachorroTest {
     @Test
     public void testInteracaoSemEnergiaNaoAlteraMotivacao() {
         Cachorro cachorro = new Cachorro(1, 5, 5, 1);
-        Jogador jogador = new Jogador("Player", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setEnergia(0.0);
         double motivacaoAntes = jogador.getMotivacao();
 
@@ -59,7 +61,7 @@ public class CachorroTest {
     @Test
     public void testInteracaoSemEnergiaNaoAlteraEnergia() {
         Cachorro cachorro = new Cachorro(1, 5, 5, 1);
-        Jogador jogador = new Jogador("Player", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setEnergia(0.1);
 
         cachorro.interacao(jogador);
@@ -73,7 +75,7 @@ public class CachorroTest {
     @Test
     public void testSaudeNuncaNegativa() {
         Cachorro cachorro = new Cachorro(1, 5, 5, 1);
-        Jogador jogador = new Jogador("Player", 0, 0);
+        Jogador jogador = new Jogador();
         jogador.setSaude(0);
         jogador.setEnergia(50.0);
 

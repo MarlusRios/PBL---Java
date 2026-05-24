@@ -1,3 +1,5 @@
+package Testes;
+
 import org.junit.*;
 import static org.junit.Assert.*;
 import Model.Jogador;
@@ -12,7 +14,7 @@ public class JogoServiceTest {
     private JogoService jogoService = new JogoService();
 
     private Jogo novoJogo() {
-        return new Jogo("id1", "Player", 0, 0, new Map());
+        return new Jogo("id1", new Map());
     }
 
     // verificarFimDoDia
@@ -223,26 +225,12 @@ public class JogoServiceTest {
     }
 
     // criarJogo
-
-    @Test
-    public void testCriarJogoRetornaJogoComNomeCorreto() {
-        JogoService svc = new JogoService();
-        Map mapa = new Map();
-
-        Jogo jogo = svc.criarJogo("abc", "Mario", 0, 0, mapa,
-                new MapService(), new InteragiveisService());
-
-        assertEquals("abc", jogo.getId());
-        assertEquals("Mario", jogo.getPlayer().getNome());
-    }
-
     @Test
     public void testCriarJogoInicializaHorario() {
         JogoService svc = new JogoService();
         Map mapa = new Map();
 
-        Jogo jogo = svc.criarJogo("xyz", "Luigi", 0, 1, mapa,
-                new MapService(), new InteragiveisService());
+        Jogo jogo = svc.criarJogo("xyz", mapa);
 
         assertEquals(7.0, jogo.getTime(), 0.01);
     }
@@ -252,8 +240,7 @@ public class JogoServiceTest {
         JogoService svc = new JogoService();
         Map mapa = new Map();
 
-        Jogo jogo = svc.criarJogo("g1", "Player", 0, 0, mapa,
-                new MapService(), new InteragiveisService());
+        Jogo jogo = svc.criarJogo("g1", mapa);
 
         assertNotNull(jogo.getMapa());
         assertNotNull(jogo.getMapa().getList()[0]);

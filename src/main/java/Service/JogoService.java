@@ -3,21 +3,20 @@ package Service;
 import Model.Jogo;
 import Model.Jogador;
 import Model.maps.Map;
-import Repository.JogoRepository;
 
 public class JogoService {
 
-    private JogoRepository jogoRepository = new JogoRepository();
+    private final MapService mapService = new MapService();
+    private final InteragiveisService interagiveisService = new InteragiveisService();
+    private final JogadorService jogadorService = new JogadorService();
 
     // Cria uma nova partida
-    public Jogo criarJogo(String id, String nomeJogador, int cabelo, int sexo, Map mapa, MapService mapService, InteragiveisService interagiveisService) {
-        Jogo jogo = new Jogo(id, nomeJogador, cabelo, sexo, mapService.preencherMinimapas(mapa, interagiveisService));
-        jogoRepository.salvar(jogo);
-        return jogo;
+    public Jogo criarJogo(String id, Map mapa) {
+        return new Jogo(id, mapService.preencherMinimapas(mapa));
     }
 
     //metodo para atualizar o jogo e aplicar a passagem de tempo e suas consequencias no jogador
-    public void rodarJogo(Jogo jogo, JogadorService jogadorService, InteragiveisService interagiveisService) throws InterruptedException{
+    public void rodarJogo(Jogo jogo) throws InterruptedException{
         Jogador jogador = jogo.getPlayer();
         while (!verificarFimDoDia(jogo)) {
             atualizarJogo(jogo, jogadorService, interagiveisService);
