@@ -10,7 +10,8 @@ import java.util.HashMap;
 
 public class JogoRepository {
 
-    private static final String CAMINHO = System.getProperty("user.dir")  + "/Bixo_Quest/Saves/saves.ser";
+    //private static final String CAMINHO = System.getProperty("user.dir")  + "/Bixo_Quest/Saves/saves.ser";
+    private static final String CAMINHO = System.getProperty("user.dir") + "/Saves/saves.ser";
     private HashMap<String, Jogo> jogos = new HashMap<>();
 
     // carrega os saves do arquivo ao iniciar

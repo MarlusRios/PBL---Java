@@ -15,9 +15,8 @@ public class JogoController {
     private final JogoRepository jogoRepository = new JogoRepository();
     private final JogoService jogoService = new JogoService();
 
-    public Jogo novaPartida() {
+    public Jogo novaPartida(String id) {
         Map mapa = new Map();
-        String id = jogoRepository.proximoId();
         Jogo jogo = jogoService.criarJogo(id, mapa);
         jogoRepository.salvar(jogo);
         return jogo;
@@ -31,7 +30,7 @@ public class JogoController {
             jogo.setMapa(mapa);
         } else {
             System.out.println("criando outra partida");
-            jogo = novaPartida();
+            jogo = novaPartida(id);
         }
         return jogo;
     }
@@ -45,6 +44,7 @@ public class JogoController {
     }
 
     public Collection<Jogo> listarPartidas() {
+        jogoRepository.inicializar();
         return jogoRepository.buscarTodos();
     }
 
