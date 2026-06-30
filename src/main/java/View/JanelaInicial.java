@@ -21,7 +21,7 @@ import Controller.JogoController;
 import Model.Jogo;
 
 
-public class MainView extends Application{
+public class JanelaInicial extends Application{
 
     @Override
     public void start(Stage primaryStage) throws Exception {
