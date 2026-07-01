@@ -4,8 +4,8 @@ import Model.Jogador;
 
 public class Maeli extends Interagiveis {
 
-    public Maeli (int id, int posx, int posy){
-        super(id, "Maeli", posx, posy, 8);
+    public Maeli (){
+        super();
     }
 
     @Override

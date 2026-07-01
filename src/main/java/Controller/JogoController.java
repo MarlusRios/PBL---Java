@@ -1,12 +1,8 @@
 package Controller;
 
 import Model.Jogo;
-import Model.maps.Map;
 import Repository.JogoRepository;
-import Service.InteragiveisService;
-import Service.JogadorService;
 import Service.JogoService;
-import Service.MapService;
 
 import java.util.Collection;
 
@@ -16,19 +12,15 @@ public class JogoController {
     private final JogoService jogoService = new JogoService();
 
     public Jogo novaPartida(String id) {
-        Map mapa = new Map();
-        Jogo jogo = jogoService.criarJogo(id, mapa);
+        Jogo jogo = jogoService.criarJogo(id);
         jogoRepository.salvar(jogo);
         return jogo;
     }
 
     public Jogo carregarPartida(String id) {
         jogoRepository.inicializar();
-        Map mapa = new Map();
         Jogo jogo = jogoRepository.buscarPorId(id);
-        if (jogo != null){
-            jogo.setMapa(mapa);
-        } else {
+        if (jogo == null){
             System.out.println("criando outra partida");
             jogo = novaPartida(id);
         }

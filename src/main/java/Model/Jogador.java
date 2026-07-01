@@ -16,10 +16,6 @@ public class Jogador implements Serializable {
     private double dinheiro;
     private double desempenho;
     private int andamento;
-    private int posx;
-    private int posy;
-    private int loc;
-    private String seta;
 
     public Jogador() {
         this.nome = "Luiza";
@@ -27,11 +23,6 @@ public class Jogador implements Serializable {
         motivacao = 100.0;
         saude = 100;
         dinheiro = 300.0;
-        posx = 15;
-        posy = 1;
-        loc = -1;
-        seta = "cima";
-
     }
 
     //getters e setters
@@ -89,43 +80,6 @@ public class Jogador implements Serializable {
     public void setDesempenho(double desempenho) {
         this.desempenho = desempenho;
     }
-
-
-    public int getPosx() {
-        return posx;
-    }
-
-    public void setPosx(int posx) {
-        this.posx = posx;
-    }
-
-
-    public int getPosy() {
-        return posy;
-    }
-
-    public void setPosy(int posy) {
-        this.posy = posy;
-    }
-
-
-    public int getLoc() {
-        return loc;
-    }
-
-    public void setLoc(int loc) {
-        this.loc = loc;
-    }
-
-
-    public void setSeta(String seta){
-        this.seta = seta;
-    }
-
-    public String getSeta(){
-        return this.seta;
-    }
-
 
     public int getAndamento() {
             return andamento;

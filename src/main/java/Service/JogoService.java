@@ -2,24 +2,22 @@ package Service;
 
 import Model.Jogo;
 import Model.Jogador;
-import Model.maps.Map;
+import Model.personagens.Professor;
 
 public class JogoService {
 
-    private final MapService mapService = new MapService();
-    private final InteragiveisService interagiveisService = new InteragiveisService();
     private final JogadorService jogadorService = new JogadorService();
 
     // Cria uma nova partida
-    public Jogo criarJogo(String id, Map mapa) {
-        return new Jogo(id, mapService.preencherMinimapas(mapa));
+    public Jogo criarJogo(String id) {
+        return new Jogo(id);
     }
 
     //metodo para atualizar o jogo e aplicar a passagem de tempo e suas consequencias no jogador
     public void rodarJogo(Jogo jogo) throws InterruptedException{
         Jogador jogador = jogo.getPlayer();
         while (!verificarFimDoDia(jogo)) {
-            atualizarJogo(jogo, jogadorService, interagiveisService);
+            atualizarJogo(jogo, jogadorService);
 
             Thread.sleep(30000); //1/2 minuto
              jogo.setTime(jogo.getTime()+0.5); // avança 1 unidade de tempo no jogo
@@ -28,20 +26,8 @@ public class JogoService {
     }
 
     // metodo para atualizar e verificar as possiveis possibilidades de eventos
-    public void atualizarJogo(Jogo jogo, JogadorService jogadorService, InteragiveisService interagiveisService){
+    public void atualizarJogo(Jogo jogo, JogadorService jogadorService){
         Jogador jogador = jogo.getPlayer();
-        Map mapa = jogo.getMapa();
-
-         if(jogo.getTime() >= 9.5 && jogo.getTime() <= 10.2 || jogo.getTime()>= 14 && jogo.getTime() <= 14.7) { //ver se está no horario da aula
-
-             if (jogadorService.naSala(jogador)) {
-                 if (jogo.isExamTime()) {
-                     jogadorService.Prova(jogo);
-                 } else {
-                    jogadorService.interagir(jogador ,mapa.getMinimapa(4));
-                 }
-             }
-         }
          jogador.setEnergia(jogador.getEnergia() - 1);
          jogador.setMotivacao(jogador.getMotivacao() - 1);
     }
@@ -118,5 +104,17 @@ public class JogoService {
     //encerrar o jogo
     private void encerrarJogo(Jogo jogo) {
         jogo.setSemestre(6);
+    }
+
+    public void fazerProva(Jogo jogo){
+        Jogador jogador = jogo.getPlayer();
+
+        if(jogo.getTime() >= 9.5 && jogo.getTime() <= 10.2 || jogo.getTime()>= 14 && jogo.getTime() <= 14.7) { //ver se está no horario da aula
+            if (jogo.isExamTime()) {
+                jogadorService.Prova(jogo);
+            } else {
+                jogadorService.interagir(jogador, new Professor());
+            }
+        }
     }
 }

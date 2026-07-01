@@ -6,8 +6,8 @@ import Model.Jogador;
 public class Aluno extends Interagiveis {
 
     Aleatorio aprender = new Aprender();
-    public Aluno (int id,String nome, int posx, int posy, int loc){
-        super (id, nome, posx, posy, loc);
+    public Aluno (){
+        super ();
     }
 
     @Override //interação com o jogador e um evento aleatorio modificando os atributos do jogador
