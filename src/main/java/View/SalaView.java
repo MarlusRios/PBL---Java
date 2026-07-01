@@ -39,7 +39,7 @@ public class SalaView extends Application {
     private boolean emDialogo = false;
 
     private void loopDoJogo(long tempoAtualNano) {
-        double velocidade = 2.0;
+        double velocidade = 1.2;
         boolean estaSeMovendo = false;
         double movimentoX = 0;
         double movimentoY = 0;
@@ -98,7 +98,7 @@ public class SalaView extends Application {
                 emDialogo = true;
                 caixaDialogo.setVisible(true);
                 textoDialogo.setText("Professor: Luiza, que bom que chegou! Pronto para apresentar o projeto? \n\nAtributos Modificados");
-                salaController.Conversar(jogo);
+                salaController.Conversar();
             }
             estaSeMovendo = false;
         } else {

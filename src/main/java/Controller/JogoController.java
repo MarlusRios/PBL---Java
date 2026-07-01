@@ -14,6 +14,7 @@ public class JogoController {
     public Jogo novaPartida(String id) {
         Jogo jogo = jogoService.criarJogo(id);
         jogoRepository.salvar(jogo);
+        JogoRepository.setJogoAtual(jogo);
         return jogo;
     }
 
@@ -23,15 +24,19 @@ public class JogoController {
         if (jogo == null){
             System.out.println("criando outra partida");
             jogo = novaPartida(id);
+        }else{
+            JogoRepository.setJogoAtual(jogo);
         }
         return jogo;
     }
 
     public void salvarPartida(Jogo jogo) {
+        jogoRepository.inicializar();
         jogoRepository.salvar(jogo);
     }
 
     public void deletarPartida(String id) {
+        jogoRepository.inicializar();
         jogoRepository.deletar(id);
     }
 

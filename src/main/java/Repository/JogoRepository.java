@@ -13,6 +13,7 @@ public class JogoRepository {
     //private static final String CAMINHO = System.getProperty("user.dir")  + "/Bixo_Quest/Saves/saves.ser";
     private static final String CAMINHO = System.getProperty("user.dir") + "/Saves/saves.ser";
     private HashMap<String, Jogo> jogos = new HashMap<>();
+    private static Jogo jogoAtual;
 
     // carrega os saves do arquivo ao iniciar
     public void inicializar() {
@@ -59,6 +60,14 @@ public class JogoRepository {
         } catch (IOException except) {
             except.printStackTrace(); // joga no console o caminho dos erros
         }
+    }
+
+    public static void setJogoAtual(Jogo jogoAtual) {
+        JogoRepository.jogoAtual = jogoAtual;
+    }
+
+    public static Jogo getJogoAtual() {
+        return jogoAtual;
     }
 
     public String proximoId() {
