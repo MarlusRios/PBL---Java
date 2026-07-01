@@ -8,8 +8,8 @@ public class Cachorro extends Interagiveis {
 
     Aleatorio mordida = new Mordida();
 
-    public Cachorro (int id, int posx, int posy, int loc){
-        super (id, "cachorro", posx, posy, loc);
+    public Cachorro (){
+        super ();
     }
 
     @Override // interação com o jogador e um evento aleatorio modificando os atributos do jogador

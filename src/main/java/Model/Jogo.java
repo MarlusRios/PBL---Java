@@ -1,6 +1,5 @@
 package Model;
 
-import Model.maps.Map;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -15,26 +14,18 @@ public class Jogo implements Serializable {
     private int semestre;
     private Jogador player;
     private boolean examTime;
-    private transient Map mapa;
 
-    public Jogo(String id, Map mapa) {
+    public Jogo(String id) {
         this.id = id;
         this.player = new Jogador();
         this.time = 7.0;
         this.semana = 1;
         this.semestre = 1;
         this.examTime = false;
-        this.mapa = mapa;
     }
 
 
     //getters e setters
-    public Map getMapa(){return mapa;}
-
-    public void setMapa(Map novoMapa){
-        this.mapa = novoMapa;
-    }
-
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 

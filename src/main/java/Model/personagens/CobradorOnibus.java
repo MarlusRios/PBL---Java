@@ -5,8 +5,8 @@ import Service.JogoService;
 
 public class CobradorOnibus extends Interagiveis {
 
-    public CobradorOnibus(int id, int posx, int posy){
-        super(id, "Cobrador", posx, posy, 1);
+    public CobradorOnibus(){
+        super();
     }
 
     @Override //interação para terminar o dia de jogo

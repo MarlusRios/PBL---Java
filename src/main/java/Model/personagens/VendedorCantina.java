@@ -8,8 +8,8 @@ import Model.Jogo;
 public class VendedorCantina extends Interagiveis {
 
     Aleatorio filaGrande = new FilaGrande();
-    public VendedorCantina (int id, int posx, int posy){
-        super(id, "vendedor", posx, posy, 3);
+    public VendedorCantina (){
+        super();
     }
 
     @Override // interação com o vendedor da cantina modificando os atributos do jogador

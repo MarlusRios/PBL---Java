@@ -10,22 +10,20 @@ public class Professor extends Interagiveis {
 
     Obrigatorio aula = new Aula();
     Aleatorio opressao = new opressao();
-    public Professor (int id, String nome, int posx, int posy, int loc){
-        super(id, nome, posx, posy, loc);
+    public Professor (){
+        super();
     }
 
     @Override // interação com o professor contendo dois eventos, um aleatorio e um obrigatorio modificando os atributos do jogador
     public void interacao (Jogador jogador){
-        if(getLoc() == 5){
-            aula.aplicarEvento(jogador);
-        }else if (jogador.getEnergia() >= 5) {
-            jogador.setConhecimento(5.0);
-            jogador.setEnergia(jogador.getEnergia() - 5.0);
-            jogador.setMotivacao(jogador.getMotivacao() + 5.0);
-            if (opressao.acontece()){
-                opressao.aplicarEvento(jogador);
-            }
+
+        aula.aplicarEvento(jogador);
+        jogador.setConhecimento(5.0);
+        jogador.setEnergia(jogador.getEnergia() - 5.0);
+        jogador.setMotivacao(jogador.getMotivacao() + 5.0);
+        if (opressao.acontece()){
+            opressao.aplicarEvento(jogador);
         }
     }
-
 }
+

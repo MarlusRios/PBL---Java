@@ -2,3 +2,18 @@
 .root {
     -fx-background-color: #000000;
 }
+
+.caixa-dialogo {
+    -fx-background-color: rgba(10, 10, 20, 0.9);
+    -fx-border-color: #ffffff;
+    -fx-border-width: 3px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+}
+
+.texto-dialogo {
+    -fx-text-fill: white;
+    -fx-font-size: 15px;
+    -fx-font-family: 'Courier New';
+    -fx-font-weight: bold;
+}

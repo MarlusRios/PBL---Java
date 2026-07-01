@@ -6,8 +6,8 @@ import Model.Jogador;
 public class Gato extends Interagiveis {
 
     Aleatorio arranhao = new Arranhao();
-    public Gato (int id, int posx, int posy, int loc){
-        super (id, "gato", posx, posy, loc);
+    public Gato (){
+        super ();
     }
 
     @Override // interação com o jogador e tendo um evento aleatorio modificando os atributos do jogador
