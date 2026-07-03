@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class SalaView extends Application {
+public class PontoDeOnibusView extends Application {
     private final SalaController salaController = new SalaController();
     private final List<Rectangle> obstaculos = new ArrayList<>();
     private final long intervalo = 120_000_000;
@@ -24,7 +24,6 @@ public class SalaView extends Application {
     private ImageView playerView;
     private Movimento teclado;
     private Rectangle playerHitbox;
-    private Rectangle blocoProfessor;
     private Pane caixaDialogo;
     private Label textoDialogo;
 
@@ -52,9 +51,6 @@ public class SalaView extends Application {
             if (teclado.isBaixo())   movimentoY += velocidade;
             if (teclado.isEsquerda()) movimentoX -= velocidade;
             if (teclado.isDireita())  movimentoX += velocidade;
-        } else {
-            if (teclado.isBaixo())    movimentoY += velocidade;
-            if (teclado.isEsquerda()) movimentoX -= velocidade;
         }
 
         if (movimentoX < 0) ultimaDirecao = Direcao.ESQUERDA;
@@ -102,21 +98,6 @@ public class SalaView extends Application {
         playerHitbox.setX(playerView.getLayoutX() + (larguraPadrao - playerHitbox.getWidth()) / 2);
         playerHitbox.setY(playerView.getLayoutY() + (alturaPadrao - playerHitbox.getHeight()));
 
-        if (playerHitbox.getBoundsInParent().intersects(blocoProfessor.getBoundsInParent())) {
-            if (!emDialogo) {
-                emDialogo = true;
-                caixaDialogo.setVisible(true);
-                textoDialogo.setText("Professor: Luiza, que bom que chegou! Pronto para apresentar o projeto? \n\nAtributos Modificados");
-                salaController.Conversar();
-            }
-            estaSeMovendo = false;
-        } else {
-            if (emDialogo) {
-                emDialogo = false;
-                caixaDialogo.setVisible(false);
-            }
-        }
-
         if (estaSeMovendo) {
             if (tempoAtualNano - ultimoTempoAnimacao >= intervalo) {
                 frameIndex++;
@@ -146,36 +127,49 @@ public class SalaView extends Application {
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/Style.css")).toExternalForm());
         teclado = new Movimento(scene);
 
-        Image imagemMapa = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/salaDeAula.png")));
+        Image imagemMapa = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/PontoDeOnibus.png")));
         ImageView mapa = new ImageView(imagemMapa);
         root.getChildren().add(mapa);
 
-        blocoProfessor = new Rectangle();
-        blocoProfessor.setFill(Color.TRANSPARENT);
-        root.getChildren().add(blocoProfessor);
 
-        Rectangle mesasEsquerdaCima = new Rectangle();
-        Rectangle mesasDireitaCima = new Rectangle();
-        Rectangle mesasEsquerdaMeio = new Rectangle();
-        Rectangle mesasDireitaMeio = new Rectangle();
-        Rectangle mesasEsquerdaBaixo = new Rectangle();
-        Rectangle mesasDireitaBaixo = new Rectangle();
-        Rectangle paredeEsquerda = new Rectangle();
-        Rectangle paredeDireita = new Rectangle();
-        Rectangle tetoCima = new Rectangle();
-        Rectangle limiteBaixo = new Rectangle();
+
+        Rectangle arvore1 = new Rectangle();   arvore1.setFill(Color.rgb(255, 0, 0, 0.5));
+        Rectangle banco = new Rectangle();      banco.setFill(Color.rgb(255, 0, 0, 0.5));
+        Rectangle vaso = new Rectangle();       vaso.setFill(Color.rgb(255, 0, 0, 0.5));
+        Rectangle hidrante = new Rectangle();   hidrante.setFill(Color.rgb(255, 0, 0, 0.5));
+        Rectangle arvore2 = new Rectangle();   arvore2.setFill(Color.rgb(255, 0, 0, 0.5));
+        Rectangle poste1 = new Rectangle();    poste1.setFill(Color.rgb(255, 0, 0, 0.5));
+        Rectangle onibus = new Rectangle();    onibus.setFill(Color.rgb(255, 0, 0, 0.5));
+        Rectangle arvore3 = new Rectangle();   arvore3.setFill(Color.rgb(255, 0, 0, 0.5));
+        Rectangle arvore4 = new Rectangle();   arvore4.setFill(Color.rgb(255, 0, 0, 0.5));
+        Rectangle banco2 = new Rectangle();    banco2.setFill(Color.rgb(255, 0, 0, 0.5));
+        Rectangle poste2 = new Rectangle();    poste2.setFill(Color.rgb(255, 0, 0, 0.5));
+        Rectangle bordaEsquerda = new Rectangle();  bordaEsquerda.setFill(Color.rgb(0, 0, 255, 0.5)); // Azul para diferenciar dos objetos
+        Rectangle bordaDireita = new Rectangle();   bordaDireita.setFill(Color.rgb(0, 0, 255, 0.5));
+        Rectangle bordaSuperior = new Rectangle();  bordaSuperior.setFill(Color.rgb(0, 0, 255, 0.5));
+        Rectangle bordaInferior = new Rectangle();  bordaInferior.setFill(Color.rgb(0, 0, 255, 0.5));
+
+
+        root.getChildren().addAll(poste1, onibus, arvore3, arvore4, banco2, poste2);
+        root.getChildren().addAll(bordaEsquerda, bordaDireita, bordaSuperior, bordaInferior);
 
         obstaculos.clear();
-        obstaculos.add(mesasEsquerdaCima);
-        obstaculos.add(mesasDireitaCima);
-        obstaculos.add(mesasEsquerdaMeio);
-        obstaculos.add(mesasDireitaMeio);
-        obstaculos.add(mesasEsquerdaBaixo);
-        obstaculos.add(mesasDireitaBaixo);
-        obstaculos.add(paredeEsquerda);
-        obstaculos.add(paredeDireita);
-        obstaculos.add(tetoCima);
-        obstaculos.add(limiteBaixo);
+        obstaculos.add(arvore1);
+        obstaculos.add(banco);
+        obstaculos.add(vaso);
+        obstaculos.add(hidrante);
+        obstaculos.add(arvore2);
+        obstaculos.add(poste1);
+        obstaculos.add(onibus);
+        obstaculos.add(arvore3);
+        obstaculos.add(arvore4);
+        obstaculos.add(banco2);
+        obstaculos.add(poste2);
+        obstaculos.add(bordaEsquerda);
+        obstaculos.add(bordaDireita);
+        obstaculos.add(bordaSuperior);
+        obstaculos.add(bordaInferior);
+
 
         inicializarImagensAnimacao();
 
@@ -194,64 +188,90 @@ public class SalaView extends Application {
             mapa.setLayoutX(mapaX);
             mapa.setLayoutY(mapaY);
 
-            blocoProfessor.setX(mapaX + 775);
-            blocoProfessor.setY(mapaY + 55);
-            blocoProfessor.setWidth(100);
-            blocoProfessor.setHeight(120);
 
-            mesasEsquerdaCima.setX(mapaX + 136);
-            mesasEsquerdaCima.setY(mapaY + 214.5);
-            mesasEsquerdaCima.setWidth(481);
-            mesasEsquerdaCima.setHeight(112);
 
-            mesasDireitaCima.setX(mapaX + 798);
-            mesasDireitaCima.setY(mapaY + 216.5);
-            mesasDireitaCima.setWidth(467);
-            mesasDireitaCima.setHeight(111);
+            arvore1.setX(mapaX + 53.0);
+            arvore1.setY(mapaY + 898.5);
+            arvore1.setWidth(70.0);
+            arvore1.setHeight(82.0);
 
-            mesasEsquerdaMeio.setX(mapaX + 136);
-            mesasEsquerdaMeio.setY(mapaY + 380);
-            mesasEsquerdaMeio.setWidth(481);
-            mesasEsquerdaMeio.setHeight(112);
+            banco.setX(mapaX + 178.0);
+            banco.setY(mapaY + 768.5);
+            banco.setWidth(103.0);
+            banco.setHeight(56.0);
 
-            mesasDireitaMeio.setX(mapaX + 798);
-            mesasDireitaMeio.setY(mapaY + 380);
-            mesasDireitaMeio.setWidth(467);
-            mesasDireitaMeio.setHeight(111);
+            vaso.setX(mapaX + 394.0);
+            vaso.setY(mapaY + 733.5);
+            vaso.setWidth(83.0);
+            vaso.setHeight(87.0);
 
-            mesasEsquerdaBaixo.setX(mapaX + 136);
-            mesasEsquerdaBaixo.setY(mapaY + 550);
-            mesasEsquerdaBaixo.setWidth(481);
-            mesasEsquerdaBaixo.setHeight(112);
+            hidrante.setX(mapaX + 1206.0);
+            hidrante.setY(mapaY + 762.5);
+            hidrante.setWidth(31.0);
+            hidrante.setHeight(58.0);
 
-            mesasDireitaBaixo.setX(mapaX + 798);
-            mesasDireitaBaixo.setY(mapaY + 550);
-            mesasDireitaBaixo.setWidth(467);
-            mesasDireitaBaixo.setHeight(111);
+            arvore2.setX(mapaX + 1357.0);
+            arvore2.setY(mapaY + 900.5);
+            arvore2.setWidth(63.0);
+            arvore2.setHeight(75.0);
 
-            paredeEsquerda.setX(mapaX + 0);
-            paredeEsquerda.setY(mapaY + 0);
-            paredeEsquerda.setWidth(48);
-            paredeEsquerda.setHeight(800);
+            poste1.setX(mapaX + 1362.0);
+            poste1.setY(mapaY + 593.5);
+            poste1.setWidth(16.0);
+            poste1.setHeight(138.0);
 
-            paredeDireita.setX(mapaX + 1360);
-            paredeDireita.setY(mapaY + 0);
-            paredeDireita.setWidth(100);
-            paredeDireita.setHeight(800);
+            onibus.setX(mapaX + 823.0);
+            onibus.setY(mapaY + 299.5);
+            onibus.setWidth(317.0);
+            onibus.setHeight(137.0);
 
-            tetoCima.setX(mapaX + 0);
-            tetoCima.setY(mapaY + 0);
-            tetoCima.setWidth(1500);
-            tetoCima.setHeight(133);
+            arvore3.setX(mapaX + 457.0);
+            arvore3.setY(mapaY + 34.5);
+            arvore3.setWidth(53.0);
+            arvore3.setHeight(83.0);
 
-            limiteBaixo.setX(mapaX + 0);
-            limiteBaixo.setY(mapaY + 680);
-            limiteBaixo.setWidth(1500);
-            limiteBaixo.setHeight(200);
+            arvore4.setX(mapaX + 994.0);
+            arvore4.setY(mapaY + 38.5);
+            arvore4.setWidth(56.0);
+            arvore4.setHeight(86.0);
+
+            banco2.setX(mapaX + 1109.0);
+            banco2.setY(mapaY + 68.5);
+            banco2.setWidth(131.0);
+            banco2.setHeight(59.0);
+
+            poste2.setX(mapaX + 1355.0);
+            poste2.setY(mapaY + 33.5);
+            poste2.setWidth(26.0);
+            poste2.setHeight(136.0);
+
+            double largMapa = imagemMapa.getWidth();
+            double altMapa = imagemMapa.getHeight();
+            double espessura = 20.0;
+
+            bordaEsquerda.setX(mapaX);
+            bordaEsquerda.setY(mapaY);
+            bordaEsquerda.setWidth(espessura);
+            bordaEsquerda.setHeight(altMapa);
+
+            bordaDireita.setX(mapaX + largMapa - espessura);
+            bordaDireita.setY(mapaY);
+            bordaDireita.setWidth(espessura);
+            bordaDireita.setHeight(altMapa);
+
+            bordaSuperior.setX(mapaX);
+            bordaSuperior.setY(mapaY);
+            bordaSuperior.setWidth(largMapa);
+            bordaSuperior.setHeight(espessura);
+
+            bordaInferior.setX(mapaX);
+            bordaInferior.setY(mapaY + altMapa - espessura);
+            bordaInferior.setWidth(largMapa);
+            bordaInferior.setHeight(espessura);
 
             if (playerXRel == -1) {
                 playerXRel = (imagemMapa.getWidth() - andarFrente[0].getWidth()) / 2;
-                playerYRel = (imagemMapa.getHeight() - andarFrente[0].getHeight()) / 2;
+                playerYRel = imagemMapa.getHeight() - 150.0;
             }
 
             playerView.setLayoutX(mapaX + playerXRel);
