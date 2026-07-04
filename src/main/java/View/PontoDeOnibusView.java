@@ -27,6 +27,11 @@ public class PontoDeOnibusView extends Application {
     private Pane caixaDialogo;
     private Label textoDialogo;
 
+    private Stage stage;
+    private AnimationTimer gameLoop;
+    private Rectangle transicaoCorredor1;
+    public static String pontoEntrada = "NOVO_JOGO";
+
     private Image[] andarFrente;
     private Image[] andarCostas;
     private Image[] andarEsquerda;
@@ -118,10 +123,22 @@ public class PontoDeOnibusView extends Application {
                 case ESQUERDA: playerView.setImage(andarEsquerda[0]); break;
             }
         }
+        if (playerHitbox.getBoundsInParent().intersects(transicaoCorredor1.getBoundsInParent())) {
+            gameLoop.stop();
+
+            try {
+                Corredor1View.pontoEntrada = "ESQUERDA";
+                Corredor1View proximoMapa = new Corredor1View();
+                proximoMapa.start(stage);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
     public void start(Stage primaryStage) {
+        this.stage = primaryStage;
         Pane root = new Pane();
         Scene scene = new Scene(root);
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/Style.css")).toExternalForm());
@@ -144,14 +161,16 @@ public class PontoDeOnibusView extends Application {
         Rectangle arvore4 = new Rectangle();   arvore4.setFill(Color.rgb(255, 0, 0, 0.5));
         Rectangle banco2 = new Rectangle();    banco2.setFill(Color.rgb(255, 0, 0, 0.5));
         Rectangle poste2 = new Rectangle();    poste2.setFill(Color.rgb(255, 0, 0, 0.5));
-        Rectangle bordaEsquerda = new Rectangle();  bordaEsquerda.setFill(Color.rgb(0, 0, 255, 0.5)); // Azul para diferenciar dos objetos
+        Rectangle bordaEsquerda = new Rectangle();  bordaEsquerda.setFill(Color.rgb(0, 0, 255, 0.5));
         Rectangle bordaDireita = new Rectangle();   bordaDireita.setFill(Color.rgb(0, 0, 255, 0.5));
         Rectangle bordaSuperior = new Rectangle();  bordaSuperior.setFill(Color.rgb(0, 0, 255, 0.5));
         Rectangle bordaInferior = new Rectangle();  bordaInferior.setFill(Color.rgb(0, 0, 255, 0.5));
+        transicaoCorredor1 = new Rectangle();     transicaoCorredor1.setFill(Color.rgb(0, 255, 0, 0.5));
 
 
         root.getChildren().addAll(poste1, onibus, arvore3, arvore4, banco2, poste2);
         root.getChildren().addAll(bordaEsquerda, bordaDireita, bordaSuperior, bordaInferior);
+        root.getChildren().add(transicaoCorredor1);
 
         obstaculos.clear();
         obstaculos.add(arvore1);
@@ -269,9 +288,21 @@ public class PontoDeOnibusView extends Application {
             bordaInferior.setWidth(largMapa);
             bordaInferior.setHeight(espessura);
 
+            transicaoCorredor1.setX(mapaX + 648.0);
+            transicaoCorredor1.setY(mapaY + 982.5);
+            transicaoCorredor1.setWidth(143.0);
+            transicaoCorredor1.setHeight(8.0);
+
             if (playerXRel == -1) {
-                playerXRel = (imagemMapa.getWidth() - andarFrente[0].getWidth()) / 2;
-                playerYRel = imagemMapa.getHeight() - 150.0;
+                if ("PORTA_CORREDOR".equals(pontoEntrada)) {
+                    playerXRel = 670.0;
+                    playerYRel = 890.0;
+                    ultimaDirecao = Direcao.CIMA;
+                } else {
+                    playerXRel = (imagemMapa.getWidth() - andarFrente[0].getWidth()) / 2;
+                    playerYRel = 500.0;
+                    ultimaDirecao = Direcao.BAIXO;
+                }
             }
 
             playerView.setLayoutX(mapaX + playerXRel);
@@ -284,13 +315,16 @@ public class PontoDeOnibusView extends Application {
         primaryStage.widthProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
         primaryStage.heightProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
 
-        primaryStage.setWidth(800);
-        primaryStage.setHeight(600);
+        if (!primaryStage.isMaximized()) {
+            primaryStage.setWidth(800);
+            primaryStage.setHeight(600);
+        }
+        primaryStage.setMaximized(true);
         reposicionarElementos.run();
 
         mapa.setOnMouseClicked(e -> System.out.println("X: " + e.getX() + " | Y: " + e.getY()));
 
-        AnimationTimer gameLoop = new AnimationTimer() {
+        gameLoop = new AnimationTimer() {
             @Override
             public void handle(long tempoAtualNano) {
                 loopDoJogo(tempoAtualNano);

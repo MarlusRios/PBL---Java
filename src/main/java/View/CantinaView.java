@@ -28,6 +28,12 @@ public class CantinaView extends Application {
     private Pane caixaDialogo;
     private Label textoDialogo;
 
+    public static String pontoEntrada = "CORREDOR";
+    private Stage stage;
+    private AnimationTimer gameLoop;
+    private Rectangle transicaoCorredor1;
+    private Rectangle transicaoSala;
+
     private Image[] andarFrente;
     private Image[] andarCostas;
     private Image[] andarEsquerda;
@@ -135,10 +141,31 @@ public class CantinaView extends Application {
                 case ESQUERDA: playerView.setImage(andarEsquerda[0]); break;
             }
         }
+        if (playerHitbox.getBoundsInParent().intersects(transicaoCorredor1.getBoundsInParent())) {
+            gameLoop.stop();
+            try {
+                Corredor1View.pontoEntrada = "DIREITA";
+                Corredor1View mapaAnterior = new Corredor1View();
+                mapaAnterior.start(stage);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (playerHitbox.getBoundsInParent().intersects(transicaoSala.getBoundsInParent())) {
+            gameLoop.stop();
+            try {
+                SalaView proximoMapa = new SalaView();
+                proximoMapa.start(stage);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
     public void start(Stage primaryStage) {
+        this.stage = primaryStage;
         Pane root = new Pane();
         Scene scene = new Scene(root);
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/Style.css")).toExternalForm());
@@ -261,7 +288,7 @@ public class CantinaView extends Application {
         root.getChildren().add(mesaCantina13);
 
         Rectangle bordaEsquerda = new Rectangle();
-        bordaEsquerda.setFill(Color.rgb(0, 0, 255, 0.5)); // Azul só pra você enxergar no teste
+        bordaEsquerda.setFill(Color.rgb(0, 0, 255, 0.5));
         root.getChildren().add(bordaEsquerda);
         Rectangle bordaDireita = new Rectangle();
         bordaDireita.setFill(Color.rgb(0, 0, 255, 0.5));
@@ -282,6 +309,11 @@ public class CantinaView extends Application {
         Rectangle paredeTopo4 = new Rectangle();
         paredeTopo4.setFill(Color.rgb(0, 0, 255, 0.5));
         root.getChildren().add(paredeTopo4);
+
+        transicaoCorredor1 = new Rectangle(); transicaoCorredor1.setFill(Color.rgb(0, 255, 0, 0.5));
+        transicaoSala = new Rectangle();      transicaoSala.setFill(Color.rgb(0, 255, 0, 0.5));
+
+        root.getChildren().addAll(transicaoCorredor1, transicaoSala);
 
         obstaculos.clear();
         obstaculos.add(balcaoVendedor);
@@ -334,8 +366,8 @@ public class CantinaView extends Application {
         inicializarCaixaDialogo(root);
 
         Runnable reposicionarElementos = () -> {
-            double larguraAtual = primaryStage.getWidth() <= 0 ? 800 : primaryStage.getWidth();
-            double alturaAtual = primaryStage.getHeight() <= 0 ? 600 : primaryStage.getHeight();
+            double larguraAtual = scene.getWidth() <= 0 ? 800 : scene.getWidth();
+            double alturaAtual = scene.getHeight() <= 0 ? 600 : scene.getHeight();
 
             double mapaX = (larguraAtual - imagemMapa.getWidth()) / 2;
             double mapaY = (alturaAtual - imagemMapa.getHeight()) / 2;
@@ -515,9 +547,26 @@ public class CantinaView extends Application {
             paredeTopo4.setWidth(405.0);
             paredeTopo4.setHeight(69.0);
 
+            transicaoCorredor1.setX(mapaX + 777.0);
+            transicaoCorredor1.setY(mapaY + 69.5);
+            transicaoCorredor1.setWidth(91.0);
+            transicaoCorredor1.setHeight(44.0);
+
+            transicaoSala.setX(mapaX + 1090.0);
+            transicaoSala.setY(mapaY + 64.5);
+            transicaoSala.setWidth(96.0);
+            transicaoSala.setHeight(47.0);
+
             if (playerXRel == -1) {
-                playerXRel = (imagemMapa.getWidth() - andarFrente[0].getWidth()) / 2;
-                playerYRel = (imagemMapa.getHeight() - andarFrente[0].getHeight()) / 2;
+                if ("SALA".equals(pontoEntrada)) {
+                    playerXRel = 1087.0;
+                    playerYRel = 110.0;
+                    ultimaDirecao = Direcao.BAIXO;
+                } else {
+                    playerXRel = 777.0;
+                    playerYRel = 118;
+                    ultimaDirecao = Direcao.BAIXO;
+                }
             }
 
             playerView.setLayoutX(mapaX + playerXRel);
@@ -527,16 +576,19 @@ public class CantinaView extends Application {
             caixaDialogo.setLayoutY(alturaAtual - caixaDialogo.getPrefHeight() - 40);
         };
 
-        primaryStage.widthProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
-        primaryStage.heightProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
+        scene.widthProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
+        scene.heightProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
 
-        primaryStage.setWidth(800);
-        primaryStage.setHeight(600);
+        if (!primaryStage.isMaximized()) {
+            primaryStage.setWidth(800);
+            primaryStage.setHeight(600);
+        }
+        primaryStage.setMaximized(true);
         reposicionarElementos.run();
 
         mapa.setOnMouseClicked(e -> System.out.println("X: " + e.getX() + " | Y: " + e.getY()));
 
-        AnimationTimer gameLoop = new AnimationTimer() {
+        gameLoop = new AnimationTimer() {
             @Override
             public void handle(long tempoAtualNano) {
                 loopDoJogo(tempoAtualNano);

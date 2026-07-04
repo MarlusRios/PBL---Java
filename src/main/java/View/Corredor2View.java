@@ -40,6 +40,12 @@ public class Corredor2View extends Application {
     private double playerXRel = -1;
     private double playerYRel = -1;
 
+    public static String pontoEntrada = "SALA";
+    private Stage stage;
+    private AnimationTimer gameLoop;
+    private Rectangle transicaoSala;
+    private Rectangle transicaoLab;
+
     private void loopDoJogo(long tempoAtualNano) {
         double velocidade = 1.2;
         boolean estaSeMovendo = false;
@@ -118,10 +124,31 @@ public class Corredor2View extends Application {
                 case ESQUERDA: playerView.setImage(andarEsquerda[0]); break;
             }
         }
+        if (playerHitbox.getBoundsInParent().intersects(transicaoSala.getBoundsInParent())) {
+            gameLoop.stop();
+            try {
+                SalaView.pontoEntrada = "CORREDOR2";
+                SalaView mapaAnterior = new SalaView();
+                mapaAnterior.start(stage);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (playerHitbox.getBoundsInParent().intersects(transicaoLab.getBoundsInParent())) {
+            gameLoop.stop();
+            try {
+                LaboratorioView proximoMapa = new LaboratorioView();
+                proximoMapa.start(stage);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
     public void start(Stage primaryStage) {
+        this.stage = primaryStage;
         Pane root = new Pane();
         Scene scene = new Scene(root);
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/Style.css")).toExternalForm());
@@ -146,9 +173,17 @@ public class Corredor2View extends Application {
         Rectangle arvore5 = new Rectangle();   arvore5.setFill(Color.rgb(255, 0, 0, 0.5));
         Rectangle arvore6 = new Rectangle();   arvore6.setFill(Color.rgb(255, 0, 0, 0.5));
         Rectangle banco = new Rectangle(); banco.setFill(Color.rgb(255, 0, 0, 0.5));
+        Rectangle paredePorta1 = new Rectangle(); paredePorta1.setFill(Color.rgb(255, 0, 0, 0.5));
+        Rectangle paredePorta2 = new Rectangle(); paredePorta2.setFill(Color.rgb(255, 0, 0, 0.5));
+        Rectangle paredePorta3 = new Rectangle(); paredePorta3.setFill(Color.rgb(255, 0, 0, 0.5));
+        Rectangle paredePorta4 = new Rectangle(); paredePorta4.setFill(Color.rgb(255, 0, 0, 0.5));
+        transicaoSala = new Rectangle(); transicaoSala.setFill(Color.rgb(0, 255, 0, 0.5));
+        transicaoLab = new Rectangle();  transicaoLab.setFill(Color.rgb(0, 255, 0, 0.5));
+
+        root.getChildren().addAll(transicaoSala, transicaoLab);
 
 
-        root.getChildren().addAll(banco, bordaEsquerda, bordaDireita, bordaSuperior, bordaInferior, arvore1, arbusto1, arvore2, arvore3, arbusto2, arvore4, arbusto3, arvore5, arvore6);
+        root.getChildren().addAll(paredePorta1, paredePorta2, paredePorta3, paredePorta4, banco, bordaEsquerda, bordaDireita, bordaSuperior, bordaInferior, arvore1, arbusto1, arvore2, arvore3, arbusto2, arvore4, arbusto3, arvore5, arvore6);
 
         obstaculos.clear();
         obstaculos.add(bordaEsquerda);
@@ -165,7 +200,10 @@ public class Corredor2View extends Application {
         obstaculos.add(arvore5);
         obstaculos.add(arvore6);
         obstaculos.add(banco);
-
+        obstaculos.add(paredePorta1);
+        obstaculos.add(paredePorta2);
+        obstaculos.add(paredePorta3);
+        obstaculos.add(paredePorta4);
         inicializarImagensAnimacao();
 
         playerView = new ImageView(andarFrente[0]);
@@ -175,8 +213,8 @@ public class Corredor2View extends Application {
         inicializarCaixaDialogo(root);
 
         Runnable reposicionarElementos = () -> {
-            double larguraAtual = primaryStage.getWidth() <= 0 ? 800 : primaryStage.getWidth();
-            double alturaAtual = primaryStage.getHeight() <= 0 ? 600 : primaryStage.getHeight();
+            double larguraAtual = scene.getWidth() <= 0 ? 800 : scene.getWidth();
+            double alturaAtual = scene.getHeight() <= 0 ? 600 : scene.getHeight();
 
             double mapaX = (larguraAtual - imagemMapa.getWidth()) / 2;
             double mapaY = (alturaAtual - imagemMapa.getHeight()) / 2;
@@ -257,9 +295,46 @@ public class Corredor2View extends Application {
             banco.setWidth(156.0);
             banco.setHeight(23.0);
 
+            paredePorta1.setX(mapaX + 22.0);
+            paredePorta1.setY(mapaY + 278.0);
+            paredePorta1.setWidth(52.0);
+            paredePorta1.setHeight(82.0);
+
+            paredePorta2.setX(mapaX + 23.0);
+            paredePorta2.setY(mapaY + 523.0);
+            paredePorta2.setWidth(51.0);
+            paredePorta2.setHeight(94.0);
+
+            paredePorta3.setX(mapaX + 1660.0);
+            paredePorta3.setY(mapaY + 277.0);
+            paredePorta3.setWidth(72.0);
+            paredePorta3.setHeight(102.0);
+
+            paredePorta4.setX(mapaX + 1659.0);
+            paredePorta4.setY(mapaY + 512.0);
+            paredePorta4.setWidth(72.0);
+            paredePorta4.setHeight(109.0);
+
+            transicaoSala.setX(mapaX + 39.0);
+            transicaoSala.setY(mapaY + 366.0);
+            transicaoSala.setWidth(28.0);
+            transicaoSala.setHeight(148.0);
+
+            transicaoLab.setX(mapaX + 1668.0);
+            transicaoLab.setY(mapaY + 383.0);
+            transicaoLab.setWidth(17.0);
+            transicaoLab.setHeight(120.0);
+
             if (playerXRel == -1) {
-                playerXRel = (imagemMapa.getWidth() - andarFrente[0].getWidth()) / 2;
-                playerYRel = imagemMapa.getHeight() - 120.0;
+                if ("LABORATORIO".equals(pontoEntrada)) {
+                    playerXRel = 1550.0;
+                    playerYRel = 400.0;
+                    ultimaDirecao = Direcao.ESQUERDA;
+                } else {
+                    playerXRel = 85.0;
+                    playerYRel = 400.0;
+                    ultimaDirecao = Direcao.DIREITA;
+                }
             }
 
             playerView.setLayoutX(mapaX + playerXRel);
@@ -269,16 +344,19 @@ public class Corredor2View extends Application {
             caixaDialogo.setLayoutY(alturaAtual - caixaDialogo.getPrefHeight() - 40);
         };
 
-        primaryStage.widthProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
-        primaryStage.heightProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
+        scene.widthProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
+        scene.heightProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
 
-        primaryStage.setWidth(800);
-        primaryStage.setHeight(600);
+        if (!primaryStage.isMaximized()) {
+            primaryStage.setWidth(800);
+            primaryStage.setHeight(600);
+        }
+        primaryStage.setMaximized(true);
         reposicionarElementos.run();
 
         mapa.setOnMouseClicked(e -> System.out.println("X: " + e.getX() + " | Y: " + e.getY()));
 
-        AnimationTimer gameLoop = new AnimationTimer() {
+        gameLoop = new AnimationTimer() {
             @Override
             public void handle(long tempoAtualNano) {
                 loopDoJogo(tempoAtualNano);
