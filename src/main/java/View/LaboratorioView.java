@@ -44,6 +44,12 @@ public class LaboratorioView extends Application {
     private double playerXRel = -1;
     private double playerYRel = -1;
 
+    public static String pontoEntrada = "CORREDOR2";
+    private Stage stage;
+    private AnimationTimer gameLoop;
+    private Rectangle transicaoCorredor2;
+    private Rectangle transicaoColegiado;
+
 
 
 
@@ -135,10 +141,31 @@ public class LaboratorioView extends Application {
                 case ESQUERDA: playerView.setImage(andarEsquerda[0]); break;
             }
         }
+
+        if (playerHitbox.getBoundsInParent().intersects(transicaoCorredor2.getBoundsInParent())) {
+            gameLoop.stop();
+            try {
+                Corredor2View.pontoEntrada = "LABORATORIO";
+                Corredor2View mapaAnterior = new Corredor2View();
+                mapaAnterior.start(stage);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        if (playerHitbox.getBoundsInParent().intersects(transicaoColegiado.getBoundsInParent())) {
+            gameLoop.stop();
+            try {
+                ColegiadoView proximoMapa = new ColegiadoView();
+                proximoMapa.start(stage);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
     public void start(Stage primaryStage) {
+        this.stage = primaryStage;
         Pane root = new Pane();
         Scene scene = new Scene(root);
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/Style.css")).toExternalForm());
@@ -239,6 +266,10 @@ public class LaboratorioView extends Application {
         root.getChildren().add(paredeTopo2);
         obstaculos.add(paredeTopo2);
 
+        transicaoCorredor2 = new Rectangle(); transicaoCorredor2.setFill(Color.rgb(0, 255, 0, 0.5));
+        transicaoColegiado = new Rectangle(); transicaoColegiado.setFill(Color.rgb(0, 255, 0, 0.5));
+        root.getChildren().addAll(transicaoCorredor2, transicaoColegiado);
+
 
 
 
@@ -254,8 +285,8 @@ public class LaboratorioView extends Application {
         inicializarCaixaDialogo(root);
 
         Runnable reposicionarElementos = () -> {
-            double larguraAtual = primaryStage.getWidth() <= 0 ? 800 : primaryStage.getWidth();
-            double alturaAtual = primaryStage.getHeight() <= 0 ? 600 : primaryStage.getHeight();
+            double larguraAtual = scene.getWidth() <= 0 ? 800 : scene.getWidth();
+            double alturaAtual = scene.getHeight() <= 0 ? 600 : scene.getHeight();
 
             double mapaX = (larguraAtual - imagemMapa.getWidth()) / 2;
             double mapaY = (alturaAtual - imagemMapa.getHeight()) / 2;
@@ -348,13 +379,30 @@ public class LaboratorioView extends Application {
             paredeTopo2.setWidth(367.0);
             paredeTopo2.setHeight(248.0);
 
+            transicaoCorredor2.setX(mapaX + 34.0);
+            transicaoCorredor2.setY(mapaY + 501.0);
+            transicaoCorredor2.setWidth(34.0);
+            transicaoCorredor2.setHeight(100.0);
+
+            transicaoColegiado.setX(mapaX + 1408.0);
+            transicaoColegiado.setY(mapaY + 494.0);
+            transicaoColegiado.setWidth(31.0);
+            transicaoColegiado.setHeight(97.0);
+
 
 
 
 
             if (playerXRel == -1) {
-                playerXRel = (imagemMapa.getWidth() - andarFrente[0].getWidth()) / 2;
-                playerYRel = 600.0;
+                if ("COLEGIADO".equals(pontoEntrada)) {
+                    playerXRel = 1300.0;
+                    playerYRel = 494;
+                    ultimaDirecao = Direcao.ESQUERDA;
+                } else {
+                    playerXRel = 90.0;
+                    playerYRel = 494.0;
+                    ultimaDirecao = Direcao.DIREITA;
+                }
             }
 
             playerView.setLayoutX(mapaX + playerXRel);
@@ -364,16 +412,19 @@ public class LaboratorioView extends Application {
             caixaDialogo.setLayoutY(alturaAtual - caixaDialogo.getPrefHeight() - 40);
         };
 
-        primaryStage.widthProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
-        primaryStage.heightProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
+        scene.widthProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
+        scene.heightProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
 
-        primaryStage.setWidth(800);
-        primaryStage.setHeight(600);
+        if (!primaryStage.isMaximized()) {
+            primaryStage.setWidth(800);
+            primaryStage.setHeight(600);
+        }
+        primaryStage.setMaximized(true);
         reposicionarElementos.run();
 
         mapa.setOnMouseClicked(e -> System.out.println("X: " + e.getX() + " | Y: " + e.getY()));
 
-        AnimationTimer gameLoop = new AnimationTimer() {
+        gameLoop = new AnimationTimer() {
             @Override
             public void handle(long tempoAtualNano) {
                 loopDoJogo(tempoAtualNano);

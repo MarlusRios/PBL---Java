@@ -87,16 +87,16 @@ public class JanelaInicial extends Application {
                     Jogo novoJogo = jogoController.novaPartida(nomeSave);
                     System.out.println("Save gerado. ID: " + novoJogo.getId());
 
-                    // --- TRANSIÇÃO DIRETAMENTE PARA A SUA SALAVIEW ---
+                    // --- TRANSIÇÃO DIRETAMENTE PARA O PONTO DE ÔNIBUS (NOVO JOGO) ---
                     try {
-                        SalaView sala = new SalaView();
+                        // 1. Avisa o Ponto de Ônibus que é um jogo novinho do zero
+                        PontoDeOnibusView.pontoEntrada = "NOVO_JOGO";
 
-                        // Redimensiona a janela para acomodar o tamanho do mapa se necessário
-                        primaryStage.setWidth(1024);
-                        primaryStage.setHeight(768);
+                        // 2. Instancia a View do Ponto de Ônibus
+                        PontoDeOnibusView pontoDeOnibus = new PontoDeOnibusView();
 
-                        // Passa o controle do Stage atual para o start da SalaView iniciar o mapa e loops
-                        sala.start(primaryStage);
+                        // 3. Passa o controle do Stage atual para iniciar o mapa e o game loop
+                        pontoDeOnibus.start(primaryStage);
 
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -120,7 +120,6 @@ public class JanelaInicial extends Application {
             btnVoltar.setTranslateX(20);
             btnVoltar.setTranslateY(20);
 
-            // CORREÇÃO: Usa a variável 'scene' direta em vez de .getScene()
             btnVoltar.setOnAction(eventVoltar -> scene.setRoot(root));
 
             telaNomeRoot.getChildren().addAll(conteudoCentro, btnVoltar);

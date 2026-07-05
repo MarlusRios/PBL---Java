@@ -27,6 +27,12 @@ public class Corredor1View extends Application {
     private Pane caixaDialogo;
     private Label textoDialogo;
 
+    public static String pontoEntrada = "ESQUERDA";
+    private Stage stage;
+    private AnimationTimer gameLoop;
+    private Rectangle transicaoPonto;
+    private Rectangle transicaoCantina;
+
     private Image[] andarFrente;
     private Image[] andarCostas;
     private Image[] andarEsquerda;
@@ -118,10 +124,32 @@ public class Corredor1View extends Application {
                 case ESQUERDA: playerView.setImage(andarEsquerda[0]); break;
             }
         }
+        if (playerHitbox.getBoundsInParent().intersects(transicaoPonto.getBoundsInParent())) {
+            gameLoop.stop();
+            try {
+                PontoDeOnibusView.pontoEntrada = "PORTA_CORREDOR";
+                PontoDeOnibusView mapaAnterior = new PontoDeOnibusView();
+                mapaAnterior.start(stage);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (playerHitbox.getBoundsInParent().intersects(transicaoCantina.getBoundsInParent())) {
+            gameLoop.stop();
+            try {
+                CantinaView proximoMapa = new CantinaView();
+                proximoMapa.start(stage);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
     }
 
     @Override
     public void start(Stage primaryStage) {
+        this.stage = primaryStage;
         Pane root = new Pane();
         Scene scene = new Scene(root);
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/Style.css")).toExternalForm());
@@ -146,8 +174,16 @@ public class Corredor1View extends Application {
         Rectangle arvore4 = new Rectangle();   arvore4.setFill(Color.rgb(255, 0, 0, 0.5));
         Rectangle arvore5 = new Rectangle();   arvore5.setFill(Color.rgb(255, 0, 0, 0.5));
         Rectangle banco = new Rectangle(); banco.setFill(Color.rgb(255, 0, 0, 0.5));
+        Rectangle parede1 = new Rectangle(); parede1.setFill(Color.rgb(0, 0, 255, 0.5));
+        Rectangle parede2 = new Rectangle(); parede2.setFill(Color.rgb(0, 0, 255, 0.5));
+        Rectangle parede3 = new Rectangle(); parede3.setFill(Color.rgb(0, 0, 255, 0.5));
+        Rectangle parede4 = new Rectangle(); parede4.setFill(Color.rgb(0, 0, 255, 0.5));
+        transicaoPonto = new Rectangle();   transicaoPonto.setFill(Color.rgb(0, 255, 0, 0.5));
+        transicaoCantina = new Rectangle(); transicaoCantina.setFill(Color.rgb(0, 255, 0, 0.5));
 
-        root.getChildren().addAll(arvore1, arvore2, arbusto1, poste, arvore3, arbusto2, arvore4, arvore5, bordaEsquerda, bordaDireita, bordaSuperior, bordaInferior,banco);
+        root.getChildren().addAll(transicaoPonto, transicaoCantina);
+
+        root.getChildren().addAll(parede1, parede2, parede3, parede4, arvore2, arbusto1, poste, arvore3, arbusto2, arvore4, arvore5, bordaEsquerda, bordaDireita, bordaSuperior, bordaInferior,banco);
 
         obstaculos.clear();
         obstaculos.add(bordaEsquerda);
@@ -163,6 +199,10 @@ public class Corredor1View extends Application {
         obstaculos.add(arvore4);
         obstaculos.add(arvore5);
         obstaculos.add(banco);
+        obstaculos.add(parede1);
+        obstaculos.add(parede2);
+        obstaculos.add(parede3);
+        obstaculos.add(parede4);
 
 
 
@@ -253,9 +293,46 @@ public class Corredor1View extends Application {
             banco.setWidth(133.0);
             banco.setHeight(17.0);
 
+            parede1.setX(mapaX + 24.0);
+            parede1.setY(mapaY + 278.5);
+            parede1.setWidth(58.0);
+            parede1.setHeight(95.0);
+
+            parede2.setX(mapaX + 22.0);
+            parede2.setY(mapaY + 519.5);
+            parede2.setWidth(58.0);
+            parede2.setHeight(110.0);
+
+            parede3.setX(mapaX + 1574.0);
+            parede3.setY(mapaY + 283.5);
+            parede3.setWidth(67.0);
+            parede3.setHeight(93.0);
+
+            parede4.setX(mapaX + 1574.0);
+            parede4.setY(mapaY + 520.5);
+            parede4.setWidth(64.0);
+            parede4.setHeight(113.0);
+
+            transicaoPonto.setX(mapaX + 55.0);
+            transicaoPonto.setY(mapaY + 380.5);
+            transicaoPonto.setWidth(21.0);
+            transicaoPonto.setHeight(134.0);
+
+            transicaoCantina.setX(mapaX + 1578.0);
+            transicaoCantina.setY(mapaY + 386.5);
+            transicaoCantina.setWidth(19.0);
+            transicaoCantina.setHeight(127.0);
+
             if (playerXRel == -1) {
-                playerXRel = (imagemMapa.getWidth() - andarFrente[0].getWidth()) / 2;
-                playerYRel = imagemMapa.getHeight() - 120.0;
+                if ("DIREITA".equals(pontoEntrada)) {
+                    playerXRel = 1460.0;
+                    playerYRel = 401.0;
+                    ultimaDirecao = Direcao.ESQUERDA;
+                } else {
+                    playerXRel = 96;
+                    playerYRel = 401;
+                    ultimaDirecao = Direcao.DIREITA;
+                }
             }
 
             playerView.setLayoutX(mapaX + playerXRel);
@@ -265,16 +342,19 @@ public class Corredor1View extends Application {
             caixaDialogo.setLayoutY(alturaAtual - caixaDialogo.getPrefHeight() - 40);
         };
 
-        primaryStage.widthProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
-        primaryStage.heightProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
+        scene.widthProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
+        scene.heightProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
 
-        primaryStage.setWidth(800);
-        primaryStage.setHeight(600);
+        if (!primaryStage.isMaximized()) {
+            primaryStage.setWidth(800);
+            primaryStage.setHeight(600);
+        }
+        primaryStage.setMaximized(true);
         reposicionarElementos.run();
 
         mapa.setOnMouseClicked(e -> System.out.println("X: " + e.getX() + " | Y: " + e.getY()));
 
-        AnimationTimer gameLoop = new AnimationTimer() {
+        gameLoop = new AnimationTimer() {
             @Override
             public void handle(long tempoAtualNano) {
                 loopDoJogo(tempoAtualNano);
