@@ -271,6 +271,7 @@ public class ColegiadoView extends Application {
             primaryStage.setHeight(600);
         }
         primaryStage.setMaximized(true);
+        primaryStage.show();
         reposicionarElementos.run();
 
         mapa.setOnMouseClicked(e -> System.out.println("X: " + e.getX() + " | Y: " + e.getY()));
@@ -284,7 +285,6 @@ public class ColegiadoView extends Application {
         gameLoop.start();
 
         primaryStage.setScene(scene);
-        primaryStage.show();
     }
 
     private void inicializarImagensAnimacao() {

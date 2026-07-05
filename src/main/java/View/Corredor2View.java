@@ -141,6 +141,7 @@ public class Corredor2View extends Application {
         if (playerHitbox.getBoundsInParent().intersects(transicaoLab.getBoundsInParent())) {
             gameLoop.stop();
             try {
+                LaboratorioView.pontoEntrada = "CORREDOR2";
                 LaboratorioView proximoMapa = new LaboratorioView();
                 proximoMapa.start(stage);
             } catch (Exception e) {
@@ -371,6 +372,7 @@ public class Corredor2View extends Application {
             primaryStage.setHeight(600);
         }
         primaryStage.setMaximized(true);
+        primaryStage.show();
         reposicionarElementos.run();
 
         mapa.setOnMouseClicked(e -> System.out.println("X: " + e.getX() + " | Y: " + e.getY()));
@@ -384,7 +386,6 @@ public class Corredor2View extends Application {
         gameLoop.start();
 
         primaryStage.setScene(scene);
-        primaryStage.show();
     }
 
     private void inicializarImagensAnimacao() {

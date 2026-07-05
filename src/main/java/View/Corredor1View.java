@@ -141,6 +141,7 @@ public class Corredor1View extends Application {
         if (playerHitbox.getBoundsInParent().intersects(transicaoCantina.getBoundsInParent())) {
             gameLoop.stop();
             try {
+                CantinaView.pontoEntrada = "CORREDOR";
                 CantinaView proximoMapa = new CantinaView();
                 proximoMapa.start(stage);
             } catch (Exception e) {
@@ -234,8 +235,8 @@ public class Corredor1View extends Application {
         inicializarCaixaDialogo(root);
 
         Runnable reposicionarElementos = () -> {
-            double larguraAtual = primaryStage.getWidth() <= 0 ? 800 : primaryStage.getWidth();
-            double alturaAtual = primaryStage.getHeight() <= 0 ? 600 : primaryStage.getHeight();
+            double larguraAtual = scene.getWidth() <= 0 ? 800 : scene.getWidth();
+            double alturaAtual = scene.getHeight() <= 0 ? 600 : scene.getHeight();
 
             double mapaX = (larguraAtual - imagemMapa.getWidth()) / 2;
             double mapaY = (alturaAtual - imagemMapa.getHeight()) / 2;
@@ -369,6 +370,7 @@ public class Corredor1View extends Application {
             primaryStage.setHeight(600);
         }
         primaryStage.setMaximized(true);
+        primaryStage.show();
         reposicionarElementos.run();
 
         mapa.setOnMouseClicked(e -> System.out.println("X: " + e.getX() + " | Y: " + e.getY()));
@@ -382,7 +384,6 @@ public class Corredor1View extends Application {
         gameLoop.start();
 
         primaryStage.setScene(scene);
-        primaryStage.show();
     }
 
     private void inicializarImagensAnimacao() {

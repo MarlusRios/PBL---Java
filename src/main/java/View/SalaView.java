@@ -177,6 +177,7 @@ public class SalaView extends Application {
         if (playerHitbox.getBoundsInParent().intersects(transicaoCorredor2.getBoundsInParent())) {
             gameLoop.stop();
             try {
+                SalaView.pontoEntrada = "CORREDOR2";
                 Corredor2View proximoMapa = new Corredor2View();
                 proximoMapa.start(stage);
             } catch (Exception e) {
@@ -364,8 +365,8 @@ public class SalaView extends Application {
             caixaDialogo.setLayoutY(alturaAtual - caixaDialogo.getPrefHeight() - 40);
         };
 
-        primaryStage.widthProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
-        primaryStage.heightProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
+        scene.widthProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
+        scene.widthProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
 
         scene.widthProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
         scene.heightProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
@@ -376,6 +377,7 @@ public class SalaView extends Application {
             primaryStage.setHeight(600);
         }
         primaryStage.setMaximized(true);
+        primaryStage.show();
         reposicionarElementos.run();
 
         mapa.setOnMouseClicked(e -> System.out.println("X: " + e.getX() + " | Y: " + e.getY()));
@@ -389,7 +391,6 @@ public class SalaView extends Application {
         gameLoop.start();
 
         primaryStage.setScene(scene);
-        primaryStage.show();
     }
 
     private void inicializarImagensAnimacao() {

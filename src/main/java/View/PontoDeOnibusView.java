@@ -217,8 +217,8 @@ public class PontoDeOnibusView extends Application {
         inicializarCaixaDialogo(root);
 
         Runnable reposicionarElementos = () -> {
-            double larguraAtual = primaryStage.getWidth() <= 0 ? 800 : primaryStage.getWidth();
-            double alturaAtual = primaryStage.getHeight() <= 0 ? 600 : primaryStage.getHeight();
+            double larguraAtual = scene.getWidth() <= 0 ? 800 : scene.getWidth();
+            double alturaAtual = scene.getHeight() <= 0 ? 600 : scene.getHeight();
 
             double mapaX = (larguraAtual - imagemMapa.getWidth()) / 2;
             double mapaY = (alturaAtual - imagemMapa.getHeight()) / 2;
@@ -330,14 +330,15 @@ public class PontoDeOnibusView extends Application {
             caixaDialogo.setLayoutY(alturaAtual - caixaDialogo.getPrefHeight() - 40);
         };
 
-        primaryStage.widthProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
-        primaryStage.heightProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
+        scene.widthProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
+        scene.widthProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
 
         if (!primaryStage.isMaximized()) {
             primaryStage.setWidth(800);
             primaryStage.setHeight(600);
         }
         primaryStage.setMaximized(true);
+        primaryStage.show();
         reposicionarElementos.run();
 
         mapa.setOnMouseClicked(e -> System.out.println("X: " + e.getX() + " | Y: " + e.getY()));
@@ -351,7 +352,6 @@ public class PontoDeOnibusView extends Application {
         gameLoop.start();
 
         primaryStage.setScene(scene);
-        primaryStage.show();
     }
 
     private void inicializarImagensAnimacao() {
