@@ -5,8 +5,10 @@ import Controller.SalaController;
 import Model.Jogador;
 import Repository.JogoRepository;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
+import javafx.scene.Group;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.image.Image;
@@ -46,9 +48,6 @@ public class Corredor2View extends Application implements Observador {
     private long ultimoTempoAnimacao = 0;
     private Direcao ultimaDirecao = Direcao.CIMA;
     private boolean emDialogo = false;
-
-    private double playerXRel = -1;
-    private double playerYRel = -1;
 
     public static String pontoEntrada = "SALA";
     private Stage stage;
@@ -92,7 +91,6 @@ public class Corredor2View extends Application implements Observador {
         }
         if (!colidiuX && movimentoX != 0) {
             playerView.setLayoutX(proximoX);
-            playerXRel += movimentoX;
         }
 
         double proximoY = playerView.getLayoutY() + movimentoY;
@@ -108,7 +106,6 @@ public class Corredor2View extends Application implements Observador {
         }
         if (!colidiuY && movimentoY != 0) {
             playerView.setLayoutY(proximoY);
-            playerYRel += movimentoY;
         }
 
         playerHitbox.setX(playerView.getLayoutX() + (larguraPadrao - playerHitbox.getWidth()) / 2);
@@ -155,264 +152,133 @@ public class Corredor2View extends Application implements Observador {
                 e.printStackTrace();
             }
         }
-        // 1. Faz o tempo passar
         Relogio.incrementarTempo();
-
-        // 2. Atualiza o texto visual do relógio na tela
         labelRelogio.setText(Relogio.obterTempoFormatado());
-
-        // 3. A cada X segundos/minutos (ex: 30), atualiza atributos do jogador
-        if (Relogio.segundosTotais % 30 == 0 && Relogio.frames == 0) {
-            // salaController.atualizarJogo(jogo, jogadorService);
-        }
     }
 
     @Override
     public void start(Stage primaryStage) {
         this.stage = primaryStage;
-        Pane root = new Pane();
-        Scene scene = new Scene(root);
+        Image imagemMapa = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/Corredor2.png")));
+        double mapW = imagemMapa.getWidth();
+        double mapH = imagemMapa.getHeight();
+
+        Pane mundoBox = new Pane();
+        mundoBox.setPrefSize(mapW, mapH);
+        mundoBox.setMinSize(mapW, mapH);
+        mundoBox.setMaxSize(mapW, mapH);
+
+        Group mundoGroup = new Group(mundoBox);
+        StackPane root = new StackPane(mundoGroup);
+        root.setStyle("-fx-background-color: #000000;");
+
+        Scene scene = new Scene(root, 800, 600);
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/Style.css")).toExternalForm());
         teclado = new Movimento(scene);
 
-        Image imagemMapa = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/Corredor2.png")));
         ImageView mapa = new ImageView(imagemMapa);
-        root.getChildren().add(mapa);
+        mundoBox.getChildren().add(mapa);
 
-        // Criando o relógio
         labelRelogio = new Label("07:00");
         labelRelogio.setStyle("-fx-font-size: 24px; -fx-text-fill: white; -fx-background-color: rgba(0, 0, 0, 0.7); -fx-padding: 5px; -fx-background-radius: 5px;");
-        labelRelogio.setLayoutX(20);
-        labelRelogio.setLayoutY(20);
-        root.getChildren().add(labelRelogio);
+        labelRelogio.setLayoutX(20); labelRelogio.setLayoutY(20);
+        mundoBox.getChildren().add(labelRelogio);
 
-        // Configuração da barra de energia
         barraEnergia = new ProgressBar(1.0);
         barraEnergia.setStyle("-fx-accent: #27ae60;");
-        barraEnergia.setPrefWidth(200);
-        barraEnergia.setPrefHeight(22);
+        barraEnergia.setPrefWidth(200); barraEnergia.setPrefHeight(22);
 
-        // Texto centralizado dentro da barra
         textoBarraEnergia = new Label("Energia");
         textoBarraEnergia.setStyle("-fx-font-size: 11px; -fx-text-fill: white; -fx-font-weight: bold; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 3, 0, 0, 0);");
 
-        // Container para empilhar barra e texto
         containerEnergia = new StackPane();
         containerEnergia.getChildren().addAll(barraEnergia, textoBarraEnergia);
-        containerEnergia.setLayoutX(20);
-        containerEnergia.setLayoutY(65);
+        containerEnergia.setLayoutX(20); containerEnergia.setLayoutY(65);
+        mundoBox.getChildren().add(containerEnergia);
 
-        root.getChildren().add(containerEnergia);
-
-        // Registra o mapa no Observer do jogador
         JogoRepository.getJogoAtual().getPlayer().adicionarObservador(this);
         atualizar();
 
-        Rectangle bordaEsquerda = new Rectangle();  bordaEsquerda.setFill(Color.rgb(0, 0, 255, 0.5));
-        Rectangle bordaDireita = new Rectangle();   bordaDireita.setFill(Color.rgb(0, 0, 255, 0.5));
-        Rectangle bordaSuperior = new Rectangle();  bordaSuperior.setFill(Color.rgb(0, 0, 255, 0.5));
-        Rectangle bordaInferior = new Rectangle();  bordaInferior.setFill(Color.rgb(0, 0, 255, 0.5));
-        Rectangle arvore1 = new Rectangle();   arvore1.setFill(Color.rgb(255, 0, 0, 0.5));
-        Rectangle arbusto1 = new Rectangle();  arbusto1.setFill(Color.rgb(255, 0, 0, 0.5));
-        Rectangle arvore2 = new Rectangle();   arvore2.setFill(Color.rgb(255, 0, 0, 0.5));
-        Rectangle arvore3 = new Rectangle();   arvore3.setFill(Color.rgb(255, 0, 0, 0.5));
-        Rectangle arbusto2 = new Rectangle();  arbusto2.setFill(Color.rgb(255, 0, 0, 0.5));
-        Rectangle arvore4 = new Rectangle();   arvore4.setFill(Color.rgb(255, 0, 0, 0.5));
-        Rectangle arbusto3 = new Rectangle();  arbusto3.setFill(Color.rgb(255, 0, 0, 0.5));
-        Rectangle arvore5 = new Rectangle();   arvore5.setFill(Color.rgb(255, 0, 0, 0.5));
-        Rectangle arvore6 = new Rectangle();   arvore6.setFill(Color.rgb(255, 0, 0, 0.5));
-        Rectangle banco = new Rectangle(); banco.setFill(Color.rgb(255, 0, 0, 0.5));
-        Rectangle paredePorta1 = new Rectangle(); paredePorta1.setFill(Color.rgb(255, 0, 0, 0.5));
-        Rectangle paredePorta2 = new Rectangle(); paredePorta2.setFill(Color.rgb(255, 0, 0, 0.5));
-        Rectangle paredePorta3 = new Rectangle(); paredePorta3.setFill(Color.rgb(255, 0, 0, 0.5));
-        Rectangle paredePorta4 = new Rectangle(); paredePorta4.setFill(Color.rgb(255, 0, 0, 0.5));
-        transicaoSala = new Rectangle(); transicaoSala.setFill(Color.rgb(0, 255, 0, 0.5));
-        transicaoLab = new Rectangle();  transicaoLab.setFill(Color.rgb(0, 255, 0, 0.5));
+        criarObstaculo(0, 0, 20.0, mapH, mundoBox);
+        criarObstaculo(mapW - 20.0, 0, 20.0, mapH, mundoBox);
+        criarObstaculo(0, 0, mapW, 50.0, mundoBox);
+        criarObstaculo(0, mapH - 20.0, mapW, 20.0, mundoBox);
+        criarObstaculo(184.0, 52.0, 167.0, 192.0, mundoBox);
+        criarObstaculo(763.0, 212.0, 71.0, 56.0, mundoBox);
+        criarObstaculo(937.0, 53.0, 141.0, 175.0, mundoBox);
+        criarObstaculo(1319.0, 56.0, 114.0, 167.0, mundoBox);
+        criarObstaculo(1528.0, 116.0, 64.0, 63.0, mundoBox);
+        criarObstaculo(181.0, 599.0, 147.0, 218.0, mundoBox);
+        criarObstaculo(542.0, 716.0, 89.0, 83.0, mundoBox);
+        criarObstaculo(852.0, 634.0, 90.0, 192.0, mundoBox);
+        criarObstaculo(1310.0, 606.0, 133.0, 213.0, mundoBox);
+        criarObstaculo(550.0, 156.0, 156.0, 23.0, mundoBox);
+        criarObstaculo(22.0, 278.0, 52.0, 82.0, mundoBox);
+        criarObstaculo(23.0, 523.0, 51.0, 94.0, mundoBox);
+        criarObstaculo(1660.0, 277.0, 72.0, 102.0, mundoBox);
+        criarObstaculo(1659.0, 512.0, 72.0, 109.0, mundoBox);
 
-        root.getChildren().addAll(transicaoSala, transicaoLab);
-        root.getChildren().addAll(paredePorta1, paredePorta2, paredePorta3, paredePorta4, banco, bordaEsquerda, bordaDireita, bordaSuperior, bordaInferior, arvore1, arbusto1, arvore2, arvore3, arbusto2, arvore4, arbusto3, arvore5, arvore6);
-
-        obstaculos.clear();
-        obstaculos.add(bordaEsquerda);
-        obstaculos.add(bordaDireita);
-        obstaculos.add(bordaSuperior);
-        obstaculos.add(bordaInferior);
-        obstaculos.add(arvore1);
-        obstaculos.add(arbusto1);
-        obstaculos.add(arvore2);
-        obstaculos.add(arvore3);
-        obstaculos.add(arbusto2);
-        obstaculos.add(arvore4);
-        obstaculos.add(arbusto3);
-        obstaculos.add(arvore5);
-        obstaculos.add(arvore6);
-        obstaculos.add(banco);
-        obstaculos.add(paredePorta1);
-        obstaculos.add(paredePorta2);
-        obstaculos.add(paredePorta3);
-        obstaculos.add(paredePorta4);
+        transicaoSala = criarTransicao(39.0, 366.0, 28.0, 148.0, mundoBox);
+        transicaoLab = criarTransicao(1668.0, 383.0, 17.0, 120.0, mundoBox);
 
         inicializarImagensAnimacao();
-
         playerView = new ImageView(andarFrente[0]);
-        root.getChildren().add(playerView);
+        mundoBox.getChildren().add(playerView);
         playerHitbox = new Rectangle(0, 0, andarFrente[0].getWidth() * 0.8, andarFrente[0].getHeight() * 0.4);
 
-        inicializarCaixaDialogo(root);
+        inicializarCaixaDialogo(mundoBox, mapW, mapH);
 
-        Runnable reposicionarElementos = () -> {
-            double larguraAtual = scene.getWidth() <= 0 ? 800 : scene.getWidth();
-            double alturaAtual = scene.getHeight() <= 0 ? 600 : scene.getHeight();
+        if ("LABORATORIO".equals(pontoEntrada)) {
+            playerView.setLayoutX(1550.0); playerView.setLayoutY(400.0); ultimaDirecao = Direcao.ESQUERDA;
+        } else {
+            playerView.setLayoutX(85.0); playerView.setLayoutY(400.0); ultimaDirecao = Direcao.DIREITA;
+        }
 
-            double mapaX = (larguraAtual - imagemMapa.getWidth()) / 2;
-            double mapaY = (alturaAtual - imagemMapa.getHeight()) / 2;
-            mapa.setLayoutX(mapaX);
-            mapa.setLayoutY(mapaY);
-
-            double largMapa = imagemMapa.getWidth();
-            double altMapa = imagemMapa.getHeight();
-            double espessura = 20.0;
-
-            bordaEsquerda.setX(mapaX);
-            bordaEsquerda.setY(mapaY);
-            bordaEsquerda.setWidth(espessura);
-            bordaEsquerda.setHeight(altMapa);
-
-            bordaDireita.setX(mapaX + largMapa - espessura);
-            bordaDireita.setY(mapaY);
-            bordaDireita.setWidth(espessura);
-            bordaDireita.setHeight(altMapa);
-
-            bordaSuperior.setY(mapaY);
-            bordaSuperior.setWidth(largMapa);
-            bordaSuperior.setHeight(50.0);
-
-            bordaInferior.setX(mapaX);
-            bordaInferior.setY(mapaY + altMapa - espessura);
-            bordaInferior.setWidth(largMapa);
-            bordaInferior.setHeight(espessura);
-
-            arvore1.setX(mapaX + 184.0);
-            arvore1.setY(mapaY + 52.0);
-            arvore1.setWidth(167.0);
-            arvore1.setHeight(192.0);
-
-            arbusto1.setX(mapaX + 763.0);
-            arbusto1.setY(mapaY + 212.0);
-            arbusto1.setWidth(71.0);
-            arbusto1.setHeight(56.0);
-
-            arvore2.setX(mapaX + 937.0);
-            arvore2.setY(mapaY + 53.0);
-            arvore2.setWidth(141.0);
-            arvore2.setHeight(175.0);
-
-            arvore3.setX(mapaX + 1319.0);
-            arvore3.setY(mapaY + 56.0);
-            arvore3.setWidth(114.0);
-            arvore3.setHeight(167.0);
-
-            arbusto2.setX(mapaX + 1528.0);
-            arbusto2.setY(mapaY + 116.0);
-            arbusto2.setWidth(64.0);
-            arbusto2.setHeight(63.0);
-
-            arvore4.setX(mapaX + 181.0);
-            arvore4.setY(mapaY + 599.0);
-            arvore4.setWidth(147.0);
-            arvore4.setHeight(218.0);
-
-            arbusto3.setX(mapaX + 542.0);
-            arbusto3.setY(mapaY + 716.0);
-            arbusto3.setWidth(89.0);
-            arbusto3.setHeight(83.0);
-
-            arvore5.setX(mapaX + 852.0);
-            arvore5.setY(mapaY + 634.0);
-            arvore5.setWidth(90.0);
-            arvore5.setHeight(192.0);
-
-            arvore6.setX(mapaX + 1310.0);
-            arvore6.setY(mapaY + 606.0);
-            arvore6.setWidth(133.0);
-            arvore6.setHeight(213.0);
-
-            banco.setX(mapaX + 550.0);
-            banco.setY(mapaY + 156.0);
-            banco.setWidth(156.0);
-            banco.setHeight(23.0);
-
-            paredePorta1.setX(mapaX + 22.0);
-            paredePorta1.setY(mapaY + 278.0);
-            paredePorta1.setWidth(52.0);
-            paredePorta1.setHeight(82.0);
-
-            paredePorta2.setX(mapaX + 23.0);
-            paredePorta2.setY(mapaY + 523.0);
-            paredePorta2.setWidth(51.0);
-            paredePorta2.setHeight(94.0);
-
-            paredePorta3.setX(mapaX + 1660.0);
-            paredePorta3.setY(mapaY + 277.0);
-            paredePorta3.setWidth(72.0);
-            paredePorta3.setHeight(102.0);
-
-            paredePorta4.setX(mapaX + 1659.0);
-            paredePorta4.setY(mapaY + 512.0);
-            paredePorta4.setWidth(72.0);
-            paredePorta4.setHeight(109.0);
-
-            transicaoSala.setX(mapaX + 39.0);
-            transicaoSala.setY(mapaY + 366.0);
-            transicaoSala.setWidth(28.0);
-            transicaoSala.setHeight(148.0);
-
-            transicaoLab.setX(mapaX + 1668.0);
-            transicaoLab.setY(mapaY + 383.0);
-            transicaoLab.setWidth(17.0);
-            transicaoLab.setHeight(120.0);
-
-            if (playerXRel == -1) {
-                if ("LABORATORIO".equals(pontoEntrada)) {
-                    playerXRel = 1550.0;
-                    playerYRel = 400.0;
-                    ultimaDirecao = Direcao.ESQUERDA;
-                } else {
-                    playerXRel = 85.0;
-                    playerYRel = 400.0;
-                    ultimaDirecao = Direcao.DIREITA;
-                }
-            }
-
-            playerView.setLayoutX(mapaX + playerXRel);
-            playerView.setLayoutY(mapaY + playerYRel);
-
-            caixaDialogo.setLayoutX((larguraAtual - caixaDialogo.getPrefWidth()) / 2);
-            caixaDialogo.setLayoutY(alturaAtual - caixaDialogo.getPrefHeight() - 40);
+        Runnable aplicarZoom = () -> {
+            double janelaW = root.getWidth();
+            double janelaH = root.getHeight();
+            if (janelaW <= 0 || janelaH <= 0) return;
+            double zoom = Math.min(janelaW / mapW, janelaH / mapH);
+            mundoGroup.setScaleX(zoom);
+            mundoGroup.setScaleY(zoom);
         };
 
-        scene.widthProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
-        scene.heightProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
+        root.widthProperty().addListener((obs, velho, novo) -> aplicarZoom.run());
+        root.heightProperty().addListener((obs, velho, novo) -> aplicarZoom.run());
 
+        primaryStage.setScene(scene);
         if (!primaryStage.isMaximized()) {
             primaryStage.setWidth(800);
             primaryStage.setHeight(600);
         }
         primaryStage.setMaximized(true);
         primaryStage.show();
-        reposicionarElementos.run();
 
-        mapa.setOnMouseClicked(e -> System.out.println("X: " + e.getX() + " | Y: " + e.getY()));
+        // FIX para o Wayland/GNOME (Linux)
+        javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.millis(150));
+        pause.setOnFinished(e -> aplicarZoom.run());
+        pause.play();
 
         gameLoop = new AnimationTimer() {
             @Override
-            public void handle(long tempoAtualNano) {
-                loopDoJogo(tempoAtualNano);
-            }
+            public void handle(long tempoAtualNano) { loopDoJogo(tempoAtualNano); }
         };
         gameLoop.start();
+    }
 
-        primaryStage.setScene(scene);
+    private Rectangle criarObstaculo(double x, double y, double w, double h, Pane root) {
+        Rectangle r = new Rectangle(x, y, w, h);
+        r.setFill(Color.rgb(255, 0, 0, 0.5));
+        root.getChildren().add(r);
+        obstaculos.add(r);
+        return r;
+    }
+
+    private Rectangle criarTransicao(double x, double y, double w, double h, Pane root) {
+        Rectangle r = new Rectangle(x, y, w, h);
+        r.setFill(Color.rgb(0, 255, 0, 0.5));
+        root.getChildren().add(r);
+        return r;
     }
 
     private void inicializarImagensAnimacao() {
@@ -438,7 +304,7 @@ public class Corredor2View extends Application implements Observador {
         };
     }
 
-    private void inicializarCaixaDialogo(Pane root) {
+    private void inicializarCaixaDialogo(Pane root, double mapW, double mapH) {
         caixaDialogo = new Pane();
         caixaDialogo.setPrefSize(650, 110);
         caixaDialogo.getStyleClass().add("caixa-dialogo");
@@ -452,6 +318,8 @@ public class Corredor2View extends Application implements Observador {
 
         caixaDialogo.getChildren().add(textoDialogo);
         caixaDialogo.setVisible(false);
+        caixaDialogo.setLayoutX((mapW - 650) / 2.0);
+        caixaDialogo.setLayoutY(mapH - 110 - 40);
         root.getChildren().add(caixaDialogo);
     }
 
@@ -461,7 +329,5 @@ public class Corredor2View extends Application implements Observador {
         barraEnergia.setProgress(jogador.getEnergia() / 100.0);
     }
 
-    public static void main(String[] args) {
-        launch(args);
-    }
+    public static void main(String[] args) { launch(args); }
 }

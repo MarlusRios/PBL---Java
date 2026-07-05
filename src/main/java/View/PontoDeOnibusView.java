@@ -5,8 +5,10 @@ import Controller.SalaController;
 import Model.Jogador;
 import Repository.JogoRepository;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
+import javafx.scene.Group;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.image.Image;
@@ -52,9 +54,6 @@ public class PontoDeOnibusView extends Application implements Observador {
     private Direcao ultimaDirecao = Direcao.CIMA;
     private boolean emDialogo = false;
 
-    private double playerXRel = -1;
-    private double playerYRel = -1;
-
     private void loopDoJogo(long tempoAtualNano) {
         double velocidade = 1.2;
         boolean estaSeMovendo = false;
@@ -91,7 +90,6 @@ public class PontoDeOnibusView extends Application implements Observador {
         }
         if (!colidiuX && movimentoX != 0) {
             playerView.setLayoutX(proximoX);
-            playerXRel += movimentoX;
         }
 
         double proximoY = playerView.getLayoutY() + movimentoY;
@@ -107,7 +105,6 @@ public class PontoDeOnibusView extends Application implements Observador {
         }
         if (!colidiuY && movimentoY != 0) {
             playerView.setLayoutY(proximoY);
-            playerYRel += movimentoY;
         }
 
         playerHitbox.setX(playerView.getLayoutX() + (larguraPadrao - playerHitbox.getWidth()) / 2);
@@ -117,7 +114,6 @@ public class PontoDeOnibusView extends Application implements Observador {
             if (tempoAtualNano - ultimoTempoAnimacao >= intervalo) {
                 frameIndex++;
                 ultimoTempoAnimacao = tempoAtualNano;
-
                 switch (ultimaDirecao) {
                     case BAIXO:    playerView.setImage(andarFrente[frameIndex % andarFrente.length]); break;
                     case CIMA:     playerView.setImage(andarCostas[frameIndex % andarCostas.length]); break;
@@ -135,248 +131,135 @@ public class PontoDeOnibusView extends Application implements Observador {
         }
         if (playerHitbox.getBoundsInParent().intersects(transicaoCorredor1.getBoundsInParent())) {
             gameLoop.stop();
-
             try {
                 Corredor1View.pontoEntrada = "ESQUERDA";
                 Corredor1View proximoMapa = new Corredor1View();
                 proximoMapa.start(stage);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            } catch (Exception e) { e.printStackTrace(); }
         }
-        // 1. Faz o tempo passar
         Relogio.incrementarTempo();
-
-        // 2. Atualiza o texto visual do relógio na tela
         labelRelogio.setText(Relogio.obterTempoFormatado());
-
-        // 3. A cada X segundos/minutos (ex: 30), atualiza atributos do jogador
-        if (Relogio.segundosTotais % 30 == 0 && Relogio.frames == 0) {
-            // salaController.atualizarJogo(jogo, jogadorService);
-        }
     }
 
     @Override
     public void start(Stage primaryStage) {
         this.stage = primaryStage;
-        Pane root = new Pane();
-        Scene scene = new Scene(root);
+        Image imagemMapa = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/PontoDeOnibus.png")));
+        double mapW = imagemMapa.getWidth();
+        double mapH = imagemMapa.getHeight();
+
+        Pane mundoBox = new Pane();
+        mundoBox.setPrefSize(mapW, mapH);
+        mundoBox.setMinSize(mapW, mapH);
+        mundoBox.setMaxSize(mapW, mapH);
+
+        Group mundoGroup = new Group(mundoBox);
+        StackPane root = new StackPane(mundoGroup);
+        root.setStyle("-fx-background-color: #000000;");
+
+        Scene scene = new Scene(root, 800, 600);
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/Style.css")).toExternalForm());
         teclado = new Movimento(scene);
 
-        Image imagemMapa = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/PontoDeOnibus.png")));
         ImageView mapa = new ImageView(imagemMapa);
-        root.getChildren().add(mapa);
+        mundoBox.getChildren().add(mapa);
 
-        // Criando o relógio
         labelRelogio = new Label("07:00");
         labelRelogio.setStyle("-fx-font-size: 24px; -fx-text-fill: white; -fx-background-color: rgba(0, 0, 0, 0.7); -fx-padding: 5px; -fx-background-radius: 5px;");
-        labelRelogio.setLayoutX(20);
-        labelRelogio.setLayoutY(20);
-        root.getChildren().add(labelRelogio);
+        labelRelogio.setLayoutX(20); labelRelogio.setLayoutY(20);
+        mundoBox.getChildren().add(labelRelogio);
 
-        // Configuração da barra de energia
         barraEnergia = new ProgressBar(1.0);
         barraEnergia.setStyle("-fx-accent: #27ae60;");
-        barraEnergia.setPrefWidth(200);
-        barraEnergia.setPrefHeight(22);
+        barraEnergia.setPrefWidth(200); barraEnergia.setPrefHeight(22);
 
-        // Texto que ficará centralizado dentro da barra
         textoBarraEnergia = new Label("Energia");
         textoBarraEnergia.setStyle("-fx-font-size: 11px; -fx-text-fill: white; -fx-font-weight: bold; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 3, 0, 0, 0);");
 
-        // Container StackPane que empilha os dois elementos
         containerEnergia = new StackPane();
         containerEnergia.getChildren().addAll(barraEnergia, textoBarraEnergia);
-        containerEnergia.setLayoutX(20);
-        containerEnergia.setLayoutY(65); // Alinhado logo abaixo do relógio
+        containerEnergia.setLayoutX(20); containerEnergia.setLayoutY(65);
+        mundoBox.getChildren().add(containerEnergia);
 
-        root.getChildren().add(containerEnergia);
-
-        // Se inscreve como observador do jogador atual
         JogoRepository.getJogoAtual().getPlayer().adicionarObservador(this);
         atualizar();
 
-        Rectangle arvore1 = new Rectangle();   arvore1.setFill(Color.rgb(255, 0, 0, 0.5));
-        Rectangle banco = new Rectangle();      banco.setFill(Color.rgb(255, 0, 0, 0.5));
-        Rectangle vaso = new Rectangle();       vaso.setFill(Color.rgb(255, 0, 0, 0.5));
-        Rectangle hidrante = new Rectangle();   hidrante.setFill(Color.rgb(255, 0, 0, 0.5));
-        Rectangle arvore2 = new Rectangle();   arvore2.setFill(Color.rgb(255, 0, 0, 0.5));
-        Rectangle poste1 = new Rectangle();    poste1.setFill(Color.rgb(255, 0, 0, 0.5));
-        Rectangle onibus = new Rectangle();    onibus.setFill(Color.rgb(255, 0, 0, 0.5));
-        Rectangle arvore3 = new Rectangle();   arvore3.setFill(Color.rgb(255, 0, 0, 0.5));
-        Rectangle arvore4 = new Rectangle();   arvore4.setFill(Color.rgb(255, 0, 0, 0.5));
-        Rectangle banco2 = new Rectangle();    banco2.setFill(Color.rgb(255, 0, 0, 0.5));
-        Rectangle poste2 = new Rectangle();    poste2.setFill(Color.rgb(255, 0, 0, 0.5));
-        Rectangle bordaEsquerda = new Rectangle();  bordaEsquerda.setFill(Color.rgb(0, 0, 255, 0.5));
-        Rectangle bordaDireita = new Rectangle();   bordaDireita.setFill(Color.rgb(0, 0, 255, 0.5));
-        Rectangle bordaSuperior = new Rectangle();  bordaSuperior.setFill(Color.rgb(0, 0, 255, 0.5));
-        Rectangle bordaInferior = new Rectangle();  bordaInferior.setFill(Color.rgb(0, 0, 255, 0.5));
-        transicaoCorredor1 = new Rectangle();     transicaoCorredor1.setFill(Color.rgb(0, 255, 0, 0.5));
+        criarObstaculo(53.0, 898.5, 70.0, 82.0, mundoBox);
+        criarObstaculo(178.0, 768.5, 103.0, 56.0, mundoBox);
+        criarObstaculo(394.0, 733.5, 83.0, 87.0, mundoBox);
+        criarObstaculo(1206.0, 762.5, 31.0, 58.0, mundoBox);
+        criarObstaculo(1357.0, 900.5, 63.0, 75.0, mundoBox);
+        criarObstaculo(1362.0, 593.5, 16.0, 138.0, mundoBox);
+        criarObstaculo(823.0, 299.5, 317.0, 137.0, mundoBox);
+        criarObstaculo(457.0, 34.5, 53.0, 83.0, mundoBox);
+        criarObstaculo(994.0, 38.5, 56.0, 86.0, mundoBox);
+        criarObstaculo(1109.0, 68.5, 131.0, 59.0, mundoBox);
+        criarObstaculo(1355.0, 33.5, 26.0, 136.0, mundoBox);
+        criarObstaculo(0, 0, 20.0, mapH, mundoBox);
+        criarObstaculo(mapW - 20.0, 0, 20.0, mapH, mundoBox);
+        criarObstaculo(0, 0, mapW, 20.0, mundoBox);
+        criarObstaculo(0, mapH - 20.0, mapW, 20.0, mundoBox);
 
-        root.getChildren().addAll(poste1, onibus, arvore3, arvore4, banco2, poste2);
-        root.getChildren().addAll(bordaEsquerda, bordaDireita, bordaSuperior, bordaInferior);
-        root.getChildren().add(transicaoCorredor1);
-
-        obstaculos.clear();
-        obstaculos.add(arvore1);
-        obstaculos.add(banco);
-        obstaculos.add(vaso);
-        obstaculos.add(hidrante);
-        obstaculos.add(arvore2);
-        obstaculos.add(poste1);
-        obstaculos.add(onibus);
-        obstaculos.add(arvore3);
-        obstaculos.add(arvore4);
-        obstaculos.add(banco2);
-        obstaculos.add(poste2);
-        obstaculos.add(bordaEsquerda);
-        obstaculos.add(bordaDireita);
-        obstaculos.add(bordaSuperior);
-        obstaculos.add(bordaInferior);
+        transicaoCorredor1 = criarTransicao(648.0, 982.5, 143.0, 8.0, mundoBox);
 
         inicializarImagensAnimacao();
-
         playerView = new ImageView(andarFrente[0]);
-        root.getChildren().add(playerView);
+        mundoBox.getChildren().add(playerView);
         playerHitbox = new Rectangle(0, 0, andarFrente[0].getWidth() * 0.8, andarFrente[0].getHeight() * 0.4);
 
-        inicializarCaixaDialogo(root);
+        inicializarCaixaDialogo(mundoBox, mapW, mapH);
 
-        Runnable reposicionarElementos = () -> {
-            double larguraAtual = scene.getWidth() <= 0 ? 800 : scene.getWidth();
-            double alturaAtual = scene.getHeight() <= 0 ? 600 : scene.getHeight();
+        if ("PORTA_CORREDOR".equals(pontoEntrada)) {
+            playerView.setLayoutX(670.0); playerView.setLayoutY(890.0); ultimaDirecao = Direcao.CIMA;
+        } else {
+            playerView.setLayoutX((mapW - andarFrente[0].getWidth()) / 2); playerView.setLayoutY(500.0); ultimaDirecao = Direcao.BAIXO;
+        }
 
-            double mapaX = (larguraAtual - imagemMapa.getWidth()) / 2;
-            double mapaY = (alturaAtual - imagemMapa.getHeight()) / 2;
-            mapa.setLayoutX(mapaX);
-            mapa.setLayoutY(mapaY);
-
-            arvore1.setX(mapaX + 53.0);
-            arvore1.setY(mapaY + 898.5);
-            arvore1.setWidth(70.0);
-            arvore1.setHeight(82.0);
-
-            banco.setX(mapaX + 178.0);
-            banco.setY(mapaY + 768.5);
-            banco.setWidth(103.0);
-            banco.setHeight(56.0);
-
-            vaso.setX(mapaX + 394.0);
-            vaso.setY(mapaY + 733.5);
-            vaso.setWidth(83.0);
-            vaso.setHeight(87.0);
-
-            hidrante.setX(mapaX + 1206.0);
-            hidrante.setY(mapaY + 762.5);
-            hidrante.setWidth(31.0);
-            hidrante.setHeight(58.0);
-
-            arvore2.setX(mapaX + 1357.0);
-            arvore2.setY(mapaY + 900.5);
-            arvore2.setWidth(63.0);
-            arvore2.setHeight(75.0);
-
-            poste1.setX(mapaX + 1362.0);
-            poste1.setY(mapaY + 593.5);
-            poste1.setWidth(16.0);
-            poste1.setHeight(138.0);
-
-            onibus.setX(mapaX + 823.0);
-            onibus.setY(mapaY + 299.5);
-            onibus.setWidth(317.0);
-            onibus.setHeight(137.0);
-
-            arvore3.setX(mapaX + 457.0);
-            arvore3.setY(mapaY + 34.5);
-            arvore3.setWidth(53.0);
-            arvore3.setHeight(83.0);
-
-            arvore4.setX(mapaX + 994.0);
-            arvore4.setY(mapaY + 38.5);
-            arvore4.setWidth(56.0);
-            arvore4.setHeight(86.0);
-
-            banco2.setX(mapaX + 1109.0);
-            banco2.setY(mapaY + 68.5);
-            banco2.setWidth(131.0);
-            banco2.setHeight(59.0);
-
-            poste2.setX(mapaX + 1355.0);
-            poste2.setY(mapaY + 33.5);
-            poste2.setWidth(26.0);
-            poste2.setHeight(136.0);
-
-            double largMapa = imagemMapa.getWidth();
-            double altMapa = imagemMapa.getHeight();
-            double espessura = 20.0;
-
-            bordaEsquerda.setX(mapaX);
-            bordaEsquerda.setY(mapaY);
-            bordaEsquerda.setWidth(espessura);
-            bordaEsquerda.setHeight(altMapa);
-
-            bordaDireita.setX(mapaX + largMapa - espessura);
-            bordaDireita.setY(mapaY);
-            bordaDireita.setWidth(espessura);
-            bordaDireita.setHeight(altMapa);
-
-            bordaSuperior.setX(mapaX);
-            bordaSuperior.setY(mapaY);
-            bordaSuperior.setWidth(largMapa);
-            bordaSuperior.setHeight(espessura);
-
-            bordaInferior.setX(mapaX);
-            bordaInferior.setY(mapaY + altMapa - espessura);
-            bordaInferior.setWidth(largMapa);
-            bordaInferior.setHeight(espessura);
-
-            transicaoCorredor1.setX(mapaX + 648.0);
-            transicaoCorredor1.setY(mapaY + 982.5);
-            transicaoCorredor1.setWidth(143.0);
-            transicaoCorredor1.setHeight(8.0);
-
-            if (playerXRel == -1) {
-                if ("PORTA_CORREDOR".equals(pontoEntrada)) {
-                    playerXRel = 670.0;
-                    playerYRel = 890.0;
-                    ultimaDirecao = Direcao.CIMA;
-                } else {
-                    playerXRel = (imagemMapa.getWidth() - andarFrente[0].getWidth()) / 2;
-                    playerYRel = 500.0;
-                    ultimaDirecao = Direcao.BAIXO;
-                }
-            }
-
-            playerView.setLayoutX(mapaX + playerXRel);
-            playerView.setLayoutY(mapaY + playerYRel);
-
-            caixaDialogo.setLayoutX((larguraAtual - caixaDialogo.getPrefWidth()) / 2);
-            caixaDialogo.setLayoutY(alturaAtual - caixaDialogo.getPrefHeight() - 40);
+        Runnable aplicarZoom = () -> {
+            double janelaW = root.getWidth();
+            double janelaH = root.getHeight();
+            if (janelaW <= 0 || janelaH <= 0) return;
+            double zoom = Math.min(janelaW / mapW, janelaH / mapH);
+            mundoGroup.setScaleX(zoom);
+            mundoGroup.setScaleY(zoom);
         };
 
-        scene.widthProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
-        scene.widthProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
+        root.widthProperty().addListener((obs, velho, novo) -> aplicarZoom.run());
+        root.heightProperty().addListener((obs, velho, novo) -> aplicarZoom.run());
 
+        primaryStage.setScene(scene);
         if (!primaryStage.isMaximized()) {
             primaryStage.setWidth(800);
             primaryStage.setHeight(600);
         }
         primaryStage.setMaximized(true);
         primaryStage.show();
-        reposicionarElementos.run();
 
-        mapa.setOnMouseClicked(e -> System.out.println("X: " + e.getX() + " | Y: " + e.getY()));
+        // FIX para o Wayland/GNOME (Linux)
+        javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.millis(150));
+        pause.setOnFinished(e -> aplicarZoom.run());
+        pause.play();
 
         gameLoop = new AnimationTimer() {
             @Override
-            public void handle(long tempoAtualNano) {
-                loopDoJogo(tempoAtualNano);
-            }
+            public void handle(long tempoAtualNano) { loopDoJogo(tempoAtualNano); }
         };
         gameLoop.start();
+    }
 
-        primaryStage.setScene(scene);
+    private Rectangle criarObstaculo(double x, double y, double w, double h, Pane root) {
+        Rectangle r = new Rectangle(x, y, w, h);
+        r.setFill(Color.rgb(255, 0, 0, 0.5));
+        root.getChildren().add(r);
+        obstaculos.add(r);
+        return r;
+    }
+
+    private Rectangle criarTransicao(double x, double y, double w, double h, Pane root) {
+        Rectangle r = new Rectangle(x, y, w, h);
+        r.setFill(Color.rgb(0, 255, 0, 0.5));
+        root.getChildren().add(r);
+        return r;
     }
 
     private void inicializarImagensAnimacao() {
@@ -402,7 +285,7 @@ public class PontoDeOnibusView extends Application implements Observador {
         };
     }
 
-    private void inicializarCaixaDialogo(Pane root) {
+    private void inicializarCaixaDialogo(Pane root, double mapW, double mapH) {
         caixaDialogo = new Pane();
         caixaDialogo.setPrefSize(650, 110);
         caixaDialogo.getStyleClass().add("caixa-dialogo");
@@ -416,6 +299,8 @@ public class PontoDeOnibusView extends Application implements Observador {
 
         caixaDialogo.getChildren().add(textoDialogo);
         caixaDialogo.setVisible(false);
+        caixaDialogo.setLayoutX((mapW - 650) / 2.0);
+        caixaDialogo.setLayoutY(mapH - 110 - 40);
         root.getChildren().add(caixaDialogo);
     }
 
@@ -425,7 +310,5 @@ public class PontoDeOnibusView extends Application implements Observador {
         barraEnergia.setProgress(jogador.getEnergia() / 100.0);
     }
 
-    public static void main(String[] args) {
-        launch(args);
-    }
+    public static void main(String[] args) { launch(args); }
 }
