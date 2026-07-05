@@ -4,6 +4,9 @@ import Controller.Relogio;
 import Controller.SalaController;
 import Model.Jogador;
 import Repository.JogoRepository;
+import View.Strategy.ComportamentoMovimento;
+import View.Strategy.MovimentoLivre;
+import View.Strategy.MovimentoParado;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
@@ -55,58 +58,23 @@ public class Corredor1View extends Application implements Observador {
     private Direcao ultimaDirecao = Direcao.CIMA;
     private boolean emDialogo = false;
 
+    // Atributo do Padrão Strategy
+    private ComportamentoMovimento comportamentoMovimento;
+
     private void loopDoJogo(long tempoAtualNano) {
-        double velocidade = 1.2;
+        double velocidad = 1.2;
         boolean estaSeMovendo = false;
-        double movimentoX = 0;
-        double movimentoY = 0;
 
-        if (!emDialogo) {
-            if (teclado.isCima())    movimentoY -= velocidade;
-            if (teclado.isBaixo())   movimentoY += velocidade;
-            if (teclado.isEsquerda()) movimentoX -= velocidade;
-            if (teclado.isDireita())  movimentoX += velocidade;
-        }
+        // Executa a movimentação delegada pelo padrão Strategy
+        comportamentoMovimento.mover(teclado, playerView, velocidad, obstaculos, playerHitbox);
 
-        if (movimentoX < 0) ultimaDirecao = Direcao.ESQUERDA;
-        if (movimentoX > 0) ultimaDirecao = Direcao.DIREITA;
-        if (movimentoY < 0) ultimaDirecao = Direcao.CIMA;
-        if (movimentoY > 0) ultimaDirecao = Direcao.BAIXO;
-
-        if (movimentoX != 0 || movimentoY != 0) estaSeMovendo = true;
+        if (teclado.isEsquerda()) { ultimaDirecao = Direcao.ESQUERDA; estaSeMovendo = true; }
+        if (teclado.isDireita())  { ultimaDirecao = Direcao.DIREITA;  estaSeMovendo = true; }
+        if (teclado.isCima())     { ultimaDirecao = Direcao.CIMA;     estaSeMovendo = true; }
+        if (teclado.isBaixo())    { ultimaDirecao = Direcao.BAIXO;    estaSeMovendo = true; }
 
         double larguraPadrao = andarFrente[0].getWidth();
         double alturaPadrao = andarFrente[0].getHeight();
-
-        double proximoX = playerView.getLayoutX() + movimentoX;
-        playerHitbox.setX(proximoX + (larguraPadrao - playerHitbox.getWidth()) / 2);
-        playerHitbox.setY(playerView.getLayoutY() + (alturaPadrao - playerHitbox.getHeight()));
-
-        boolean colidiuX = false;
-        for (Rectangle obs : obstaculos) {
-            if (playerHitbox.getBoundsInParent().intersects(obs.getBoundsInParent())) {
-                colidiuX = true;
-                break;
-            }
-        }
-        if (!colidiuX && movimentoX != 0) {
-            playerView.setLayoutX(proximoX);
-        }
-
-        double proximoY = playerView.getLayoutY() + movimentoY;
-        playerHitbox.setX(playerView.getLayoutX() + (larguraPadrao - playerHitbox.getWidth()) / 2);
-        playerHitbox.setY(proximoY + (alturaPadrao - playerHitbox.getHeight()));
-
-        boolean colidiuY = false;
-        for (Rectangle obs : obstaculos) {
-            if (playerHitbox.getBoundsInParent().intersects(obs.getBoundsInParent())) {
-                colidiuY = true;
-                break;
-            }
-        }
-        if (!colidiuY && movimentoY != 0) {
-            playerView.setLayoutY(proximoY);
-        }
 
         playerHitbox.setX(playerView.getLayoutX() + (larguraPadrao - playerHitbox.getWidth()) / 2);
         playerHitbox.setY(playerView.getLayoutY() + (alturaPadrao - playerHitbox.getHeight()));
@@ -170,6 +138,9 @@ public class Corredor1View extends Application implements Observador {
         Scene scene = new Scene(root, 800, 600);
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/Style.css")).toExternalForm());
         teclado = new Movimento(scene);
+
+        // Inicializa o comportamento padrão do Strategy
+        comportamentoMovimento = new MovimentoLivre();
 
         ImageView mapa = new ImageView(imagemMapa);
         mundoBox.getChildren().add(mapa);
@@ -248,7 +219,6 @@ public class Corredor1View extends Application implements Observador {
         primaryStage.setMaximized(true);
         primaryStage.show();
 
-        // FIX para o Wayland/GNOME (Linux)
         javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.millis(150));
         pause.setOnFinished(e -> aplicarZoom.run());
         pause.play();
