@@ -1,7 +1,11 @@
 package Model;
 
+import View.Observador;
+
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Jogador implements Serializable {
     @Serial
@@ -16,6 +20,7 @@ public class Jogador implements Serializable {
     private double dinheiro;
     private double desempenho;
     private int andamento;
+    private transient List<Observador> observadores = new ArrayList<>();
 
     public Jogador() {
         this.nome = "Luiza";
@@ -40,6 +45,7 @@ public class Jogador implements Serializable {
 
     public void setEnergia(double energia) {
         this.energia = energia;
+        notificar();
     }
 
     public double getConhecimento() { return conhecimento; }
@@ -87,6 +93,22 @@ public class Jogador implements Serializable {
 
     public void setAndamento(int andamento) {
         this.andamento = andamento;
+    }
+
+    private void notificar() {
+        if (observadores != null) {
+            for (Observador o : observadores) {
+                o.atualizar();
+            }
+        }
+    }
+
+    public void adicionarObservador(Observador o) {
+        // Evita que a lista fique nula caso o jogador seja carregado de um arquivo binário
+        if (this.observadores == null) {
+            this.observadores = new ArrayList<>();
+        }
+        this.observadores.add(o);
     }
 }
 

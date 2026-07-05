@@ -2,22 +2,26 @@ package View;
 
 import Controller.Relogio;
 import Controller.SalaController;
+import Model.Jogador;
+import Repository.JogoRepository;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.animation.AnimationTimer;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.paint.Color;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class Corredor2View extends Application {
+public class Corredor2View extends Application implements Observador {
     private final SalaController salaController = new SalaController();
     private final List<Rectangle> obstaculos = new ArrayList<>();
     private final long intervalo = 120_000_000;
@@ -27,6 +31,9 @@ public class Corredor2View extends Application {
     private Rectangle playerHitbox;
     private Pane caixaDialogo;
     private Label textoDialogo;
+    private ProgressBar barraEnergia;
+    private Label textoBarraEnergia;
+    private StackPane containerEnergia;
 
     private Image[] andarFrente;
     private Image[] andarCostas;
@@ -179,6 +186,28 @@ public class Corredor2View extends Application {
         labelRelogio.setLayoutY(20);
         root.getChildren().add(labelRelogio);
 
+        // Configuração da barra de energia
+        barraEnergia = new ProgressBar(1.0);
+        barraEnergia.setStyle("-fx-accent: #27ae60;");
+        barraEnergia.setPrefWidth(200);
+        barraEnergia.setPrefHeight(22);
+
+        // Texto centralizado dentro da barra
+        textoBarraEnergia = new Label("Energia");
+        textoBarraEnergia.setStyle("-fx-font-size: 11px; -fx-text-fill: white; -fx-font-weight: bold; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 3, 0, 0, 0);");
+
+        // Container para empilhar barra e texto
+        containerEnergia = new StackPane();
+        containerEnergia.getChildren().addAll(barraEnergia, textoBarraEnergia);
+        containerEnergia.setLayoutX(20);
+        containerEnergia.setLayoutY(65);
+
+        root.getChildren().add(containerEnergia);
+
+        // Registra o mapa no Observer do jogador
+        JogoRepository.getJogoAtual().getPlayer().adicionarObservador(this);
+        atualizar();
+
         Rectangle bordaEsquerda = new Rectangle();  bordaEsquerda.setFill(Color.rgb(0, 0, 255, 0.5));
         Rectangle bordaDireita = new Rectangle();   bordaDireita.setFill(Color.rgb(0, 0, 255, 0.5));
         Rectangle bordaSuperior = new Rectangle();  bordaSuperior.setFill(Color.rgb(0, 0, 255, 0.5));
@@ -201,8 +230,6 @@ public class Corredor2View extends Application {
         transicaoLab = new Rectangle();  transicaoLab.setFill(Color.rgb(0, 255, 0, 0.5));
 
         root.getChildren().addAll(transicaoSala, transicaoLab);
-
-
         root.getChildren().addAll(paredePorta1, paredePorta2, paredePorta3, paredePorta4, banco, bordaEsquerda, bordaDireita, bordaSuperior, bordaInferior, arvore1, arbusto1, arvore2, arvore3, arbusto2, arvore4, arbusto3, arvore5, arvore6);
 
         obstaculos.clear();
@@ -224,6 +251,7 @@ public class Corredor2View extends Application {
         obstaculos.add(paredePorta2);
         obstaculos.add(paredePorta3);
         obstaculos.add(paredePorta4);
+
         inicializarImagensAnimacao();
 
         playerView = new ImageView(andarFrente[0]);
@@ -240,7 +268,6 @@ public class Corredor2View extends Application {
             double mapaY = (alturaAtual - imagemMapa.getHeight()) / 2;
             mapa.setLayoutX(mapaX);
             mapa.setLayoutY(mapaY);
-
 
             double largMapa = imagemMapa.getWidth();
             double altMapa = imagemMapa.getHeight();
@@ -426,6 +453,12 @@ public class Corredor2View extends Application {
         caixaDialogo.getChildren().add(textoDialogo);
         caixaDialogo.setVisible(false);
         root.getChildren().add(caixaDialogo);
+    }
+
+    @Override
+    public void atualizar() {
+        Jogador jogador = JogoRepository.getJogoAtual().getPlayer();
+        barraEnergia.setProgress(jogador.getEnergia() / 100.0);
     }
 
     public static void main(String[] args) {

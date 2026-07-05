@@ -2,22 +2,26 @@ package View;
 
 import Controller.Relogio;
 import Controller.SalaController;
+import Model.Jogador;
+import Repository.JogoRepository;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.animation.AnimationTimer;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.paint.Color;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class CantinaView extends Application {
+public class CantinaView extends Application implements Observador {
     private final SalaController salaController = new SalaController();
     private final List<Rectangle> obstaculos = new ArrayList<>();
     private final long intervalo = 120_000_000;
@@ -28,6 +32,9 @@ public class CantinaView extends Application {
     private Rectangle blocoProfessor;
     private Pane caixaDialogo;
     private Label textoDialogo;
+    private ProgressBar barraEnergia;
+    private Label textoBarraEnergia;
+    private StackPane containerEnergia;
 
     public static String pontoEntrada = "CORREDOR";
     private Stage stage;
@@ -47,15 +54,8 @@ public class CantinaView extends Application {
     private Direcao ultimaDirecao = Direcao.CIMA;
     private boolean emDialogo = false;
 
-
-
-
     private double playerXRel = -1;
     private double playerYRel = -1;
-
-
-
-
 
     private void loopDoJogo(long tempoAtualNano) {
         double velocidade = 1.2;
@@ -196,6 +196,28 @@ public class CantinaView extends Application {
         labelRelogio.setLayoutY(20);
         root.getChildren().add(labelRelogio);
 
+        // Configuração da barra de energia
+        barraEnergia = new ProgressBar(1.0);
+        barraEnergia.setStyle("-fx-accent: #27ae60;");
+        barraEnergia.setPrefWidth(200);
+        barraEnergia.setPrefHeight(22);
+
+        // Texto centralizado dentro da barra
+        textoBarraEnergia = new Label("Energia");
+        textoBarraEnergia.setStyle("-fx-font-size: 11px; -fx-text-fill: white; -fx-font-weight: bold; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 3, 0, 0, 0);");
+
+        // Container para empilhar barra e texto
+        containerEnergia = new StackPane();
+        containerEnergia.getChildren().addAll(barraEnergia, textoBarraEnergia);
+        containerEnergia.setLayoutX(20);
+        containerEnergia.setLayoutY(65);
+
+        root.getChildren().add(containerEnergia);
+
+        // Registra o mapa no Observer do jogador
+        JogoRepository.getJogoAtual().getPlayer().adicionarObservador(this);
+        atualizar();
+
         Rectangle balcaoVendedor = new Rectangle();
         balcaoVendedor.setFill(Color.rgb(255, 0, 0, 0.5));
         root.getChildren().add(balcaoVendedor);
@@ -253,7 +275,6 @@ public class CantinaView extends Application {
         banco2.setFill(Color.rgb(255, 0, 0, 0.5));
         root.getChildren().add(banco2);
 
-
         Rectangle mesa1_A = new Rectangle();
         mesa1_A.setFill(Color.rgb(255, 0, 0, 0.5));
         root.getChildren().add(mesa1_A);
@@ -263,7 +284,6 @@ public class CantinaView extends Application {
         Rectangle mesa1_C = new Rectangle();
         mesa1_C.setFill(Color.rgb(255, 0, 0, 0.5));
         root.getChildren().add(mesa1_C);
-
 
         Rectangle mesa2_A = new Rectangle();
         mesa2_A.setFill(Color.rgb(255, 0, 0, 0.5));
@@ -373,10 +393,6 @@ public class CantinaView extends Application {
         obstaculos.add(paredeTopo3);
         obstaculos.add(paredeTopo4);
 
-
-
-
-
         inicializarImagensAnimacao();
 
         playerView = new ImageView(andarFrente[0]);
@@ -393,6 +409,12 @@ public class CantinaView extends Application {
             double mapaY = (alturaAtual - imagemMapa.getHeight()) / 2;
             mapa.setLayoutX(mapaX);
             mapa.setLayoutY(mapaY);
+
+            // Mantém os elementos da UI fixados no topo esquerdo da janela
+            labelRelogio.setLayoutX(20);
+            labelRelogio.setLayoutY(20);
+            containerEnergia.setLayoutX(20);
+            containerEnergia.setLayoutY(65);
 
             balcaoVendedor.setX(mapaX + 1333.0);
             balcaoVendedor.setY(mapaY + 288.5);
@@ -450,7 +472,7 @@ public class CantinaView extends Application {
             mesaCantina9_A.setX(mapaX + 296.0);
             mesaCantina9_A.setY(mapaY + 260.5);
             mesaCantina9_A.setWidth(106.0);
-            mesaCantina9_A.setHeight(160.0); // Era 175.0
+            mesaCantina9_A.setHeight(160.0);
             mesaCantina9_B.setX(mapaX + 403.0);
             mesaCantina9_B.setY(mapaY + 234.5);
             mesaCantina9_B.setWidth(54.0);
@@ -507,7 +529,6 @@ public class CantinaView extends Application {
             objetoCantina3.setWidth(84.0);
             objetoCantina3.setHeight(23.0);
 
-
             objetoCantina4.setX(mapaX + 1175.0);
             objetoCantina4.setY(mapaY + 755.5);
             objetoCantina4.setWidth(71.0);
@@ -535,7 +556,6 @@ public class CantinaView extends Application {
 
             double larguraMapa = 1600.0;
             double alturaMapa = 960.0;
-            double alturaParedeTopo = 0.5;
 
             bordaEsquerda.setX(mapaX - 10);
             bordaEsquerda.setY(mapaY);
@@ -658,6 +678,12 @@ public class CantinaView extends Application {
         caixaDialogo.getChildren().add(textoDialogo);
         caixaDialogo.setVisible(false);
         root.getChildren().add(caixaDialogo);
+    }
+
+    @Override
+    public void atualizar() {
+        Jogador jogador = JogoRepository.getJogoAtual().getPlayer();
+        barraEnergia.setProgress(jogador.getEnergia() / 100.0);
     }
 
     public static void main(String[] args) {

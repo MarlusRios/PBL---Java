@@ -2,10 +2,14 @@ package View;
 
 import Controller.SalaController;
 import Controller.Relogio;
+import Model.Jogador;
+import Repository.JogoRepository;
 import javafx.application.Application;
+import javafx.scene.control.ProgressBar;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.animation.AnimationTimer;
@@ -17,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class SalaView extends Application {
+public class SalaView extends Application implements Observador {
     private final SalaController salaController = new SalaController();
     private final List<Rectangle> obstaculos = new ArrayList<>();
     private final long intervalo = 120_000_000;
@@ -28,6 +32,9 @@ public class SalaView extends Application {
     private Rectangle blocoProfessor;
     private Pane caixaDialogo;
     private Label textoDialogo;
+    private ProgressBar barraEnergia;
+    private Label textoBarraEnergia;
+    private StackPane containerEnergia;
 
     private Image[] andarFrente;
     private Image[] andarCostas;
@@ -218,6 +225,27 @@ public class SalaView extends Application {
         labelRelogio.setLayoutY(20);
         root.getChildren().add(labelRelogio);
 
+        // Configuração da barra de energia
+        barraEnergia = new ProgressBar(1.0);
+        barraEnergia.setStyle("-fx-accent: #27ae60;");
+        barraEnergia.setPrefWidth(200);
+        barraEnergia.setPrefHeight(22); // Altura adequada para o texto caber dentro
+
+        // Texto que ficará centralizado dentro da barra
+        textoBarraEnergia = new Label("Energia");
+        textoBarraEnergia.setStyle("-fx-font-size: 11px; -fx-text-fill: white; -fx-font-weight: bold; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 3, 0, 0, 0);");
+
+        // Container StackPane que empilha os dois elementos
+        containerEnergia = new StackPane();
+        containerEnergia.getChildren().addAll(barraEnergia, textoBarraEnergia);
+        containerEnergia.setLayoutX(20);
+        containerEnergia.setLayoutY(65); // Posicionado logo abaixo do relógio
+
+        root.getChildren().add(containerEnergia);
+
+        JogoRepository.getJogoAtual().getPlayer().adicionarObservador(this);
+        atualizar();
+
         Rectangle mesasEsquerdaCima = new Rectangle();
         Rectangle mesasDireitaCima = new Rectangle();
         Rectangle mesasEsquerdaMeio = new Rectangle();
@@ -339,7 +367,6 @@ public class SalaView extends Application {
             transicaoCantina.setWidth(90.0);
             transicaoCantina.setHeight(36.0);
 
-
             transicaoCorredor2.setX(mapaX + 656.0);
             transicaoCorredor2.setY(mapaY + 103.5);
             transicaoCorredor2.setWidth(93.0);
@@ -351,7 +378,6 @@ public class SalaView extends Application {
                     playerYRel = 140.0;
                     ultimaDirecao = Direcao.BAIXO;
                 } else {
-
                     playerXRel = 660.0;
                     playerYRel = 580.0;
                     ultimaDirecao = Direcao.CIMA;
@@ -370,7 +396,6 @@ public class SalaView extends Application {
 
         scene.widthProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
         scene.heightProperty().addListener((obs, velho, novo) -> reposicionarElementos.run());
-
 
         if (!primaryStage.isMaximized()) {
             primaryStage.setWidth(800);
@@ -431,6 +456,14 @@ public class SalaView extends Application {
         caixaDialogo.getChildren().add(textoDialogo);
         caixaDialogo.setVisible(false);
         root.getChildren().add(caixaDialogo);
+    }
+
+    @Override
+    public void atualizar() {
+        Jogador jogador = JogoRepository.getJogoAtual().getPlayer();
+
+        // Divide por 100.0 porque o ProgressBar do JavaFX espera um valor entre 0.0 e 1.0
+        barraEnergia.setProgress(jogador.getEnergia() / 100.0);
     }
 
     public static void main(String[] args) {

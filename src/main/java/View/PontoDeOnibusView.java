@@ -2,22 +2,26 @@ package View;
 
 import Controller.Relogio;
 import Controller.SalaController;
+import Model.Jogador;
+import Repository.JogoRepository;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.animation.AnimationTimer;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.paint.Color;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class PontoDeOnibusView extends Application {
+public class PontoDeOnibusView extends Application implements Observador {
     private final SalaController salaController = new SalaController();
     private final List<Rectangle> obstaculos = new ArrayList<>();
     private final long intervalo = 120_000_000;
@@ -27,6 +31,9 @@ public class PontoDeOnibusView extends Application {
     private Rectangle playerHitbox;
     private Pane caixaDialogo;
     private Label textoDialogo;
+    private ProgressBar barraEnergia;
+    private Label textoBarraEnergia;
+    private StackPane containerEnergia;
 
     private Stage stage;
     private AnimationTimer gameLoop;
@@ -168,6 +175,28 @@ public class PontoDeOnibusView extends Application {
         labelRelogio.setLayoutY(20);
         root.getChildren().add(labelRelogio);
 
+        // Configuração da barra de energia
+        barraEnergia = new ProgressBar(1.0);
+        barraEnergia.setStyle("-fx-accent: #27ae60;");
+        barraEnergia.setPrefWidth(200);
+        barraEnergia.setPrefHeight(22);
+
+        // Texto que ficará centralizado dentro da barra
+        textoBarraEnergia = new Label("Energia");
+        textoBarraEnergia.setStyle("-fx-font-size: 11px; -fx-text-fill: white; -fx-font-weight: bold; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 3, 0, 0, 0);");
+
+        // Container StackPane que empilha os dois elementos
+        containerEnergia = new StackPane();
+        containerEnergia.getChildren().addAll(barraEnergia, textoBarraEnergia);
+        containerEnergia.setLayoutX(20);
+        containerEnergia.setLayoutY(65); // Alinhado logo abaixo do relógio
+
+        root.getChildren().add(containerEnergia);
+
+        // Se inscreve como observador do jogador atual
+        JogoRepository.getJogoAtual().getPlayer().adicionarObservador(this);
+        atualizar();
+
         Rectangle arvore1 = new Rectangle();   arvore1.setFill(Color.rgb(255, 0, 0, 0.5));
         Rectangle banco = new Rectangle();      banco.setFill(Color.rgb(255, 0, 0, 0.5));
         Rectangle vaso = new Rectangle();       vaso.setFill(Color.rgb(255, 0, 0, 0.5));
@@ -184,7 +213,6 @@ public class PontoDeOnibusView extends Application {
         Rectangle bordaSuperior = new Rectangle();  bordaSuperior.setFill(Color.rgb(0, 0, 255, 0.5));
         Rectangle bordaInferior = new Rectangle();  bordaInferior.setFill(Color.rgb(0, 0, 255, 0.5));
         transicaoCorredor1 = new Rectangle();     transicaoCorredor1.setFill(Color.rgb(0, 255, 0, 0.5));
-
 
         root.getChildren().addAll(poste1, onibus, arvore3, arvore4, banco2, poste2);
         root.getChildren().addAll(bordaEsquerda, bordaDireita, bordaSuperior, bordaInferior);
@@ -207,7 +235,6 @@ public class PontoDeOnibusView extends Application {
         obstaculos.add(bordaSuperior);
         obstaculos.add(bordaInferior);
 
-
         inicializarImagensAnimacao();
 
         playerView = new ImageView(andarFrente[0]);
@@ -224,8 +251,6 @@ public class PontoDeOnibusView extends Application {
             double mapaY = (alturaAtual - imagemMapa.getHeight()) / 2;
             mapa.setLayoutX(mapaX);
             mapa.setLayoutY(mapaY);
-
-
 
             arvore1.setX(mapaX + 53.0);
             arvore1.setY(mapaY + 898.5);
@@ -392,6 +417,12 @@ public class PontoDeOnibusView extends Application {
         caixaDialogo.getChildren().add(textoDialogo);
         caixaDialogo.setVisible(false);
         root.getChildren().add(caixaDialogo);
+    }
+
+    @Override
+    public void atualizar() {
+        Jogador jogador = JogoRepository.getJogoAtual().getPlayer();
+        barraEnergia.setProgress(jogador.getEnergia() / 100.0);
     }
 
     public static void main(String[] args) {
