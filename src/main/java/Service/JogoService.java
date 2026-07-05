@@ -2,7 +2,7 @@ package Service;
 
 import Model.Jogo;
 import Model.Jogador;
-import Model.personagens.Professor;
+import Model.Personagens.Professor;
 
 public class JogoService {
 
@@ -113,7 +113,7 @@ public class JogoService {
             if (jogo.isExamTime()) {
                 jogadorService.Prova(jogo);
             } else {
-                jogadorService.interagir(jogador, new Professor());
+                jogadorService.interagirBoolean(jogador, new Professor());
             }
         }
     }

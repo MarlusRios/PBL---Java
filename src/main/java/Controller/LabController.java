@@ -2,19 +2,18 @@ package Controller;
 
 import Model.Jogador;
 import Model.Jogo;
+import Model.Personagens.Aluno;
 import Repository.JogoRepository;
-import Model.Personagens.Professor;
 import Service.JogadorService;
 import Service.JogoService;
 
-public class SalaController {
-
+public class LabController {
     private final JogadorService jogadorService = new JogadorService();
     private final JogoService jogoService = new JogoService();
 
-    public boolean conversar(){
+    public void baterPapo(){
         Jogo jogo = JogoRepository.getJogoAtual();
         Jogador jogador = jogo.getPlayer();
-        return jogadorService.interagirBoolean(jogador, new Professor());
+        jogadorService.interagir(jogador, new Aluno());
     }
 }

@@ -1,4 +1,4 @@
-package Model.personagens;
+package Model.Personagens;
 
 import Model.Jogo;
 import Service.JogoService;

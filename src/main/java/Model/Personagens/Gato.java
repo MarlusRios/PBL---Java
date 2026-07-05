@@ -1,8 +1,9 @@
-package Model.personagens;
+package Model.Personagens;
 
 import Model.Eventos.Aleatorio;
 import Model.Eventos.Aleatorios.Arranhao;
 import Model.Jogador;
+
 public class Gato extends Interagiveis {
 
     Aleatorio arranhao = new Arranhao();
@@ -11,13 +12,15 @@ public class Gato extends Interagiveis {
     }
 
     @Override // interação com o jogador e tendo um evento aleatorio modificando os atributos do jogador
-    public void interacao(Jogador jogador) {
+    public boolean interacaoBoolean(Jogador jogador) {
         if (jogador.getEnergia() >= 0.2) {
             jogador.setMotivacao(jogador.getMotivacao() + 0.5);
             jogador.setEnergia(jogador.getEnergia() - 0.2);
         }
         if(arranhao.acontece()){
             arranhao.aplicarEvento(jogador);
+            return true;
         }
+    return false;
     }
 }

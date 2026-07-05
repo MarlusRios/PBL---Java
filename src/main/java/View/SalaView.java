@@ -104,10 +104,16 @@ public class SalaView extends Application {
 
         if (playerHitbox.getBoundsInParent().intersects(blocoProfessor.getBoundsInParent())) {
             if (!emDialogo) {
-                emDialogo = true;
-                caixaDialogo.setVisible(true);
-                textoDialogo.setText("Professor: Luiza, que bom que chegou! Pronto para apresentar o projeto? \n\nAtributos Modificados");
-                salaController.Conversar();
+                boolean chat = salaController.conversar();
+                if(!chat) {
+                    emDialogo = true;
+                    caixaDialogo.setVisible(true);
+                    textoDialogo.setText("Professor: Luiza, que bom que chegou! Pronto para apresentar o projeto? \n\nAtributos Modificados");
+                }else{
+                    emDialogo = true;
+                    caixaDialogo.setVisible(true);
+                    textoDialogo.setText("Professor: Luiza, porque voce não consegue concluir as provas no momento certo? Dessa forma voce vai repetir a matéria! \n\nAtributos Modificados (Sofreu opressão)");
+                }
             }
             estaSeMovendo = false;
         } else {

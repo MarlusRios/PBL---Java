@@ -5,7 +5,7 @@ import Model.Eventos.Obrigatorios.FazerProva2;
 import Model.Jogo;
 import Model.Eventos.Obrigatorio;
 import Model.Jogador;
-import Model.personagens.Interagiveis;
+import Model.Personagens.Interagiveis;
 
 import java.security.PublicKey;
 
@@ -14,6 +14,10 @@ public class JogadorService {
     //metodo para interagir com os Interagiveis e aplicar suas consequencias
     public void interagir(Jogador player,Interagiveis interagiveis) {
         interagiveis.interacao(player);
+    }
+
+    public boolean interagirBoolean(Jogador player, Interagiveis interagiveis){
+        return interagiveis.interacaoBoolean(player);
     }
 
     //metodo para fazer a prova

@@ -1,4 +1,4 @@
-package Model.personagens;
+package Model.Personagens;
 
 import Model.Eventos.Aleatorio;
 import Model.Eventos.Aleatorios.FilaGrande;

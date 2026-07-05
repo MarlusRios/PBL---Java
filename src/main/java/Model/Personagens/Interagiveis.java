@@ -1,4 +1,4 @@
-package Model.personagens;
+package Model.Personagens;
 
 import Model.Jogador;
 import Model.Jogo;
@@ -11,5 +11,9 @@ public abstract class Interagiveis {
     public  void interacao (Jogador jogador){}
 
     public void interacao (Jogador jogador, Jogo jogo){}
+
+    public  boolean interacaoBoolean (Jogador jogador){return false;}
+
+
 
 }
