@@ -1,5 +1,6 @@
 package View;
 
+import Controller.Relogio;
 import Controller.SalaController;
 import javafx.application.Application;
 import javafx.stage.Stage;
@@ -31,6 +32,8 @@ public class Corredor2View extends Application {
     private Image[] andarCostas;
     private Image[] andarEsquerda;
     private Image[] andarDireita;
+
+    private Label labelRelogio;
 
     private int frameIndex = 0;
     private long ultimoTempoAnimacao = 0;
@@ -144,6 +147,16 @@ public class Corredor2View extends Application {
                 e.printStackTrace();
             }
         }
+        // 1. Faz o tempo passar
+        Relogio.incrementarTempo();
+
+        // 2. Atualiza o texto visual do relógio na tela
+        labelRelogio.setText(Relogio.obterTempoFormatado());
+
+        // 3. A cada X segundos/minutos (ex: 30), atualiza atributos do jogador
+        if (Relogio.segundosTotais % 30 == 0 && Relogio.frames == 0) {
+            // salaController.atualizarJogo(jogo, jogadorService);
+        }
     }
 
     @Override
@@ -158,6 +171,12 @@ public class Corredor2View extends Application {
         ImageView mapa = new ImageView(imagemMapa);
         root.getChildren().add(mapa);
 
+        // Criando o relógio
+        labelRelogio = new Label("07:00");
+        labelRelogio.setStyle("-fx-font-size: 24px; -fx-text-fill: white; -fx-background-color: rgba(0, 0, 0, 0.7); -fx-padding: 5px; -fx-background-radius: 5px;");
+        labelRelogio.setLayoutX(20);
+        labelRelogio.setLayoutY(20);
+        root.getChildren().add(labelRelogio);
 
         Rectangle bordaEsquerda = new Rectangle();  bordaEsquerda.setFill(Color.rgb(0, 0, 255, 0.5));
         Rectangle bordaDireita = new Rectangle();   bordaDireita.setFill(Color.rgb(0, 0, 255, 0.5));

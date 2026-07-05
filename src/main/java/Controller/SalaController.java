@@ -12,9 +12,12 @@ public class SalaController {
     private final JogadorService jogadorService = new JogadorService();
     private final JogoService jogoService = new JogoService();
 
-    public boolean conversar(){
+    public int conversar(){
         Jogo jogo = JogoRepository.getJogoAtual();
         Jogador jogador = jogo.getPlayer();
-        return jogadorService.interagirBoolean(jogador, new Professor());
+        if (jogadorService.Prova(jogo)){
+            return -1;
+        }
+        return jogadorService.interagirInt(jogador, new Professor());
     }
 }

@@ -10,9 +10,9 @@ public abstract class Interagiveis {
 
     public  void interacao (Jogador jogador){}
 
-    public void interacao (Jogador jogador, Jogo jogo){}
+    public int interacaoInt(Jogador jogador, Jogo jogo){return 0;}
 
-    public  boolean interacaoBoolean (Jogador jogador){return false;}
+    public  int interacaoInt(Jogador jogador){return 0;}
 
 
 

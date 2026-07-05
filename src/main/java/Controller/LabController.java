@@ -14,6 +14,6 @@ public class LabController {
     public void baterPapo(){
         Jogo jogo = JogoRepository.getJogoAtual();
         Jogador jogador = jogo.getPlayer();
-        jogadorService.interagir(jogador, new Aluno());
+        jogadorService.interagirInt(jogador, new Aluno());
     }
 }

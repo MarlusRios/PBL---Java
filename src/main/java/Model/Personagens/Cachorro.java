@@ -13,15 +13,16 @@ public class Cachorro extends Interagiveis {
     }
 
     @Override // interação com o jogador e um evento aleatorio modificando os atributos do jogador
-    public boolean interacaoBoolean (Jogador jogador){
+    public int interacaoInt(Jogador jogador){
         if (jogador.getEnergia() >= 0.2) {
             jogador.setMotivacao(jogador.getMotivacao() + 0.5);
             jogador.setEnergia(jogador.getEnergia()- 0.2);
             if(mordida.acontece()){
                 mordida.aplicarEvento(jogador);
-                return true;
+                return 2;
             }
+            return 1;
         }
-    return false;
+    return 0;
     }
 }

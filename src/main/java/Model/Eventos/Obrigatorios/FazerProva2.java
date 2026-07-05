@@ -13,10 +13,11 @@ public class FazerProva2 extends Obrigatorio {
     }
 
     @Override // metodo ultilizado para calcular a nota do jogador considerando a nota anterior
-    public void aplicarEvento(Jogador jogador) {
+    public boolean aplicarEvento(Jogador jogador) {
         if(milagre.acontece()){
             milagre.aplicarEvento(jogador);
         }
         jogador.setDesempenho((jogador.getDesempenho()+jogador.getConhecimento()/10)/2);
+        return false;
     }
 }

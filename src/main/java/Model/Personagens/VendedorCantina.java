@@ -13,7 +13,7 @@ public class VendedorCantina extends Interagiveis {
     }
 
     @Override // interação com o vendedor da cantina modificando os atributos do jogador
-    public void interacao (Jogador jogador, Jogo jogo){
+    public int interacaoInt(Jogador jogador, Jogo jogo){
         if(jogador.getDinheiro() >= 10) {
             jogador.setSaude(jogador.getSaude() + 10);
             jogador.setEnergia(jogador.getEnergia() + 10);
@@ -21,8 +21,11 @@ public class VendedorCantina extends Interagiveis {
             jogador.setMotivacao(jogador.getMotivacao() + 10);
             if (filaGrande.acontece()) {
                 filaGrande.aplicarEvento(jogador, jogo);
+                return 2;
             }
+            return 1;
         }
+    return 0;
     }
 
 }

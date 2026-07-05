@@ -4,7 +4,6 @@ import Model.Eventos.Aleatorio;
 import Model.Eventos.Aleatorios.Milagre;
 import Model.Eventos.Obrigatorio;
 import Model.Jogador;
-import Model.Jogo;
 
 public class FazerProva1 extends Obrigatorio {
 
@@ -14,11 +13,12 @@ public class FazerProva1 extends Obrigatorio {
     }
 
     @Override // metodo ultilizado para calcular a nota do jogador
-    public void aplicarEvento(Jogador jogador) {
+    public boolean aplicarEvento(Jogador jogador) {
         if(milagre.acontece()){
             milagre.aplicarEvento(jogador);
         }
         jogador.setDesempenho(jogador.getConhecimento()/10);
         jogador.setConhecimento(Math.min(10, jogador.getConhecimento())); //isso apenas pra verificar se o conhecimento atual é menor que 10
+        return false;
     }
 }

@@ -113,7 +113,7 @@ public class JogoService {
             if (jogo.isExamTime()) {
                 jogadorService.Prova(jogo);
             } else {
-                jogadorService.interagirBoolean(jogador, new Professor());
+                jogadorService.interagirInt(jogador, new Professor());
             }
         }
     }

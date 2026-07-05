@@ -20,7 +20,9 @@ public abstract class Obrigatorio {
     // metodos a serem subscritos por herança/polimorfismo
     public void aplicarEvento(Jogador jogador, Jogo jogo){}
 
-    public void aplicarEvento(Jogador jogador){}
+    public boolean aplicarEvento(Jogador jogador){
+        return false;
+    }
 
     public Obrigatorio(int semanaDeOcorrencia){
         this.semanaDeOcorrencia = semanaDeOcorrencia;

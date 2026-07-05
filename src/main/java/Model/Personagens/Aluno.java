@@ -11,16 +11,17 @@ public class Aluno extends Interagiveis {
     }
 
     @Override //interação com o jogador e um evento aleatorio modificando os atributos do jogador
-    public boolean interacaoBoolean(Jogador jogador){
+    public int interacaoInt(Jogador jogador){
         if (jogador.getEnergia() >= 2) {
             jogador.setConhecimento(jogador.getConhecimento() + 2.0);
             jogador.setEnergia(jogador.getEnergia() - 2.0);
             jogador.setMotivacao(jogador.getMotivacao() + 10.0);
             if(aprender.acontece()){
                 aprender.aplicarEvento(jogador);
-                return true;
+                return 2;
             }
+            return 1;
         }
-        return false;
+        return 0;
     }
 }

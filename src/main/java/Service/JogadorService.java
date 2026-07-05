@@ -16,18 +16,21 @@ public class JogadorService {
         interagiveis.interacao(player);
     }
 
-    public boolean interagirBoolean(Jogador player, Interagiveis interagiveis){
-        return interagiveis.interacaoBoolean(player);
+    public int interagirInt(Jogador player, Interagiveis interagiveis){
+        return interagiveis.interacaoInt(player);
     }
 
     //metodo para fazer a prova
-    public void Prova(Jogo jogo){
+    public boolean Prova(Jogo jogo){
         if(jogo.getSemana() == 4)   {
             Obrigatorio prova = new FazerProva1();
             prova.aplicarEvento(jogo.getPlayer());
+            return true;
         }else if(jogo.getSemana() == 8){
             Obrigatorio prova = new FazerProva2();
             prova.aplicarEvento(jogo.getPlayer());
+            return true;
         }
+        return false;
     }
 }

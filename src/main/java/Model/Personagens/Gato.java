@@ -12,15 +12,16 @@ public class Gato extends Interagiveis {
     }
 
     @Override // interação com o jogador e tendo um evento aleatorio modificando os atributos do jogador
-    public boolean interacaoBoolean(Jogador jogador) {
+    public int interacaoInt(Jogador jogador) {
         if (jogador.getEnergia() >= 0.2) {
             jogador.setMotivacao(jogador.getMotivacao() + 0.5);
             jogador.setEnergia(jogador.getEnergia() - 0.2);
+            if(arranhao.acontece()) {
+                arranhao.aplicarEvento(jogador);
+                return 2;
+            }
+            return 1;
         }
-        if(arranhao.acontece()){
-            arranhao.aplicarEvento(jogador);
-            return true;
-        }
-    return false;
+        return 0;
     }
 }

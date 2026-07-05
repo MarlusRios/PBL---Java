@@ -1,6 +1,7 @@
 package View;
 
 import Controller.SalaController;
+import Controller.Relogio;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
@@ -32,6 +33,8 @@ public class SalaView extends Application {
     private Image[] andarCostas;
     private Image[] andarEsquerda;
     private Image[] andarDireita;
+
+    private Label labelRelogio;
 
     private int frameIndex = 0;
     private long ultimoTempoAnimacao = 0;
@@ -110,15 +113,26 @@ public class SalaView extends Application {
 
         if (playerHitbox.getBoundsInParent().intersects(blocoProfessor.getBoundsInParent())) {
             if (!emDialogo) {
-                boolean chat = salaController.conversar();
-                if(!chat) {
+                int chat = salaController.conversar();
+                if(chat == 1) {
                     emDialogo = true;
                     caixaDialogo.setVisible(true);
-                    textoDialogo.setText("Professor: Luiza, que bom que chegou! Pronto para apresentar o projeto? \n\nAtributos Modificados");
-                }else{
+                    textoDialogo.setText("Professor: Luiza, que bom que chegou! Pronto para apresentar o projeto? \n\nEnergia - 5\n motivação +5");
+                }else if(chat == 2){
                     emDialogo = true;
                     caixaDialogo.setVisible(true);
-                    textoDialogo.setText("Professor: Luiza, porque voce não consegue concluir as provas no momento certo? Dessa forma voce vai repetir a matéria! \n\nAtributos Modificados (Sofreu opressão)");
+                    textoDialogo.setText("Professor: Luiza, voce é muito burra e vai repetir a materia! \n\nEnergia -10\nMotivação -20");
+                }else if (chat == 3 ){
+                    emDialogo = true;
+                    caixaDialogo.setVisible(true);
+                    textoDialogo.setText("Professor: Bom dia luiza, prota pra aula? \n\nO tempo passou\nconhecimento +25\nenergia -30");
+                }else if (chat == -1){
+                    //exibir video da prova
+                }
+                else {
+                    emDialogo = true;
+                    caixaDialogo.setVisible(true);
+                    textoDialogo.setText("Energia insuficiente");
                 }
             }
             estaSeMovendo = false;
@@ -169,6 +183,16 @@ public class SalaView extends Application {
                 e.printStackTrace();
             }
         }
+        // 1. Faz o tempo passar
+        Relogio.incrementarTempo();
+
+        // 2. Atualiza o texto visual do relógio na tela
+        labelRelogio.setText(Relogio.obterTempoFormatado());
+
+        // 3. A cada X segundos/minutos (ex: 30), atualiza atributos do jogador
+        if (Relogio.segundosTotais % 30 == 0 && Relogio.frames == 0) {
+            // salaController.atualizarJogo(jogo, jogadorService);
+        }
     }
 
     @Override
@@ -186,6 +210,12 @@ public class SalaView extends Application {
         blocoProfessor = new Rectangle();
         blocoProfessor.setFill(Color.TRANSPARENT);
         root.getChildren().add(blocoProfessor);
+
+        labelRelogio = new Label("07:00");
+        labelRelogio.setStyle("-fx-font-size: 24px; -fx-text-fill: white; -fx-background-color: rgba(0, 0, 0, 0.7); -fx-padding: 5px; -fx-background-radius: 5px;");
+        labelRelogio.setLayoutX(20);
+        labelRelogio.setLayoutY(20);
+        root.getChildren().add(labelRelogio);
 
         Rectangle mesasEsquerdaCima = new Rectangle();
         Rectangle mesasDireitaCima = new Rectangle();

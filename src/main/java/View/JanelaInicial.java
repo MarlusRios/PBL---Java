@@ -93,7 +93,7 @@ public class JanelaInicial extends Application {
                         PontoDeOnibusView.pontoEntrada = "NOVO_JOGO";
 
                         // 2. Instancia a View do Ponto de Ônibus
-                        PontoDeOnibusView pontoDeOnibus = new PontoDeOnibusView();
+                        SalaView pontoDeOnibus = new SalaView();
 
                         // 3. Passa o controle do Stage atual para iniciar o mapa e o game loop
                         pontoDeOnibus.start(primaryStage);
