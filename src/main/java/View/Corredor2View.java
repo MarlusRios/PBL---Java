@@ -1,6 +1,5 @@
 package View;
 
-import Controller.CorredorGatoController;
 import Controller.Relogio;
 import Controller.SalaController;
 import Model.Jogador;
@@ -26,7 +25,6 @@ import java.util.Objects;
 
 public class Corredor2View extends Application implements Observador {
     private final SalaController salaController = new SalaController();
-    private final CorredorGatoController gatoController = new CorredorGatoController();
     private final List<Rectangle> obstaculos = new ArrayList<>();
     private final long intervalo = 120_000_000;
 
@@ -57,21 +55,18 @@ public class Corredor2View extends Application implements Observador {
     private Rectangle transicaoSala;
     private Rectangle transicaoLab;
 
-    private ImageView gatoView;
-    private Rectangle gatoHitbox;
-    private Rectangle gatoSensor;
-    private int eventoGatoSorteado = -1;
-
     private void loopDoJogo(long tempoAtualNano) {
         double velocidade = 1.2;
         boolean estaSeMovendo = false;
         double movimentoX = 0;
         double movimentoY = 0;
 
-        if (teclado.isCima())    movimentoY -= velocidade;
-        if (teclado.isBaixo())   movimentoY += velocidade;
-        if (teclado.isEsquerda()) movimentoX -= velocidade;
-        if (teclado.isDireita())  movimentoX += velocidade;
+        if (!emDialogo) {
+            if (teclado.isCima())    movimentoY -= velocidade;
+            if (teclado.isBaixo())   movimentoY += velocidade;
+            if (teclado.isEsquerda()) movimentoX -= velocidade;
+            if (teclado.isDireita())  movimentoX += velocidade;
+        }
 
         if (movimentoX < 0) ultimaDirecao = Direcao.ESQUERDA;
         if (movimentoX > 0) ultimaDirecao = Direcao.DIREITA;
@@ -159,34 +154,6 @@ public class Corredor2View extends Application implements Observador {
         }
         Relogio.incrementarTempo();
         labelRelogio.setText(Relogio.obterTempoFormatado());
-
-        if(playerHitbox.getBoundsInParent().intersects(gatoSensor.getBoundsInParent())) {
-            if (!emDialogo) {
-                emDialogo = true;
-                caixaDialogo.setVisible(true);
-
-                if (eventoGatoSorteado == -1) {
-                    eventoGatoSorteado = gatoController.carinho();
-
-                    if (eventoGatoSorteado == 0) {
-                        textoDialogo.setText("Você olha para o gato... \n\nMas você está cansada demais para fazer carinho. \n\nEnergia insuficiente.");
-                    }
-                    else if (eventoGatoSorteado == 1) {
-                        textoDialogo.setText("Gato: Miau~ (Ronrona) \n\nVocê faz carinho no gato. Ele fechou os olhos e ronronou de satisfação! \n\nEnergia -0.2 | Motivação +0.5");
-                    }
-                    else if (eventoGatoSorteado == 2) {
-                        textoDialogo.setText("Gato: MIAU! (Rosna) \n\nVocê tentou passar a mão nele, mas ele não gostou e te deu um arranhão.");
-                    }
-                    atualizar();
-                }
-            }
-        } else {
-            if (emDialogo && eventoGatoSorteado != -1) {
-                emDialogo = false;
-                caixaDialogo.setVisible(false);
-                eventoGatoSorteado = -1;
-            }
-        }
     }
 
     @Override
@@ -245,6 +212,7 @@ public class Corredor2View extends Application implements Observador {
         criarObstaculo(542.0, 716.0, 89.0, 83.0, mundoBox);
         criarObstaculo(852.0, 634.0, 90.0, 192.0, mundoBox);
         criarObstaculo(1310.0, 606.0, 133.0, 213.0, mundoBox);
+        criarObstaculo(550.0, 156.0, 156.0, 23.0, mundoBox);
         criarObstaculo(22.0, 278.0, 52.0, 82.0, mundoBox);
         criarObstaculo(23.0, 523.0, 51.0, 94.0, mundoBox);
         criarObstaculo(1660.0, 277.0, 72.0, 102.0, mundoBox);
@@ -252,32 +220,6 @@ public class Corredor2View extends Application implements Observador {
 
         transicaoSala = criarTransicao(39.0, 366.0, 28.0, 148.0, mundoBox);
         transicaoLab = criarTransicao(1668.0, 383.0, 17.0, 120.0, mundoBox);
-
-        Image imgGato = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/gato.gif")));
-        gatoView = new ImageView(imgGato);
-
-        gatoView.setFitWidth(imgGato.getWidth() * 3.2);
-        gatoView.setPreserveRatio(true);
-
-        gatoView.setLayoutX(410.0);
-        gatoView.setLayoutY(230.0);
-
-        double gatoW = imgGato.getWidth() * 2.2;
-        double gatoH = imgGato.getHeight() * 2.2;
-
-        double gHitboxW = gatoW * 0.6;
-        double gHitboxH = gatoH * 0.4;
-        double gHitboxX = 410.0 + (gatoW - gHitboxW) / 2;
-        double gHitboxY = 230.0 + (gatoH - gHitboxH);
-
-        gatoHitbox = new Rectangle(gHitboxX, gHitboxY, gHitboxW, gHitboxH);
-        gatoHitbox.setFill(Color.TRANSPARENT);
-
-        gatoSensor = new Rectangle(gHitboxX - 20, gHitboxY - 20, gHitboxW + 40, gHitboxH + 40);
-        gatoSensor.setFill(Color.TRANSPARENT);
-
-        mundoBox.getChildren().addAll(gatoView, gatoHitbox, gatoSensor);
-        obstaculos.add(gatoHitbox); // Torna o corpinho dele sólido
 
         inicializarImagensAnimacao();
         playerView = new ImageView(andarFrente[0]);
@@ -339,7 +281,6 @@ public class Corredor2View extends Application implements Observador {
         return r;
     }
 
-
     private void inicializarImagensAnimacao() {
         andarCostas = new Image[]{
                 new Image(Objects.requireNonNull(getClass().getResourceAsStream("/sprite_BF_parada.png"))),
@@ -365,20 +306,20 @@ public class Corredor2View extends Application implements Observador {
 
     private void inicializarCaixaDialogo(Pane root, double mapW, double mapH) {
         caixaDialogo = new Pane();
-        caixaDialogo.setPrefSize(650, 145); // Mudou para 145
+        caixaDialogo.setPrefSize(650, 110);
         caixaDialogo.getStyleClass().add("caixa-dialogo");
 
         textoDialogo = new Label();
         textoDialogo.getStyleClass().add("texto-dialogo");
         textoDialogo.setLayoutX(20);
-        textoDialogo.setLayoutY(15);
+        textoDialogo.setLayoutY(20);
         textoDialogo.setWrapText(true);
         textoDialogo.setPrefWidth(610);
 
         caixaDialogo.getChildren().add(textoDialogo);
         caixaDialogo.setVisible(false);
         caixaDialogo.setLayoutX((mapW - 650) / 2.0);
-        caixaDialogo.setLayoutY(mapH - 145 - 25);
+        caixaDialogo.setLayoutY(mapH - 110 - 40);
         root.getChildren().add(caixaDialogo);
     }
 
