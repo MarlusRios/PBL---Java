@@ -11,9 +11,9 @@ public class LabController {
     private final JogadorService jogadorService = new JogadorService();
     private final JogoService jogoService = new JogoService();
 
-    public void baterPapo(){
+    public int baterPapo(){
         Jogo jogo = JogoRepository.getJogoAtual();
         Jogador jogador = jogo.getPlayer();
-        jogadorService.interagirInt(jogador, new Aluno());
+        return jogadorService.interagirInt(jogador, new Aluno());
     }
 }

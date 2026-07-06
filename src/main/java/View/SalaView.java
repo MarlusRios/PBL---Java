@@ -1,5 +1,6 @@
 package View;
 
+import Controller.GeralController;
 import Controller.SalaController;
 import Controller.Relogio;
 import Model.Jogador;
@@ -21,7 +22,6 @@ import javafx.animation.AnimationTimer;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.paint.Color;
 import javafx.scene.control.Label;
-import javafx.geometry.Pos;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +31,7 @@ public class SalaView extends Application implements Observador {
     private final SalaController salaController = new SalaController();
     private final List<Rectangle> obstaculos = new ArrayList<>();
     private final long intervalo = 120_000_000;
+    private final GeralController geralController = new GeralController();
 
     private ImageView playerView;
     private Movimento teclado;
@@ -66,8 +67,9 @@ public class SalaView extends Application implements Observador {
     private void loopDoJogo(long tempoAtualNano) {
         double velocidade = 1.2;
         boolean estaSeMovendo = false;
+        geralController.MudarTempo();
 
-        // 1. Delega a movimentação e colisão para a estratégia atual (Strategy)
+        // 1. Delega a movimentação para a estratégia ativa (Strategy)
         comportamentoMovimento.mover(teclado, playerView, velocidade, obstaculos, playerHitbox);
 
         // 2. Atualiza a direção da animação baseada no teclado
@@ -76,7 +78,6 @@ public class SalaView extends Application implements Observador {
         if (teclado.isCima())     { ultimaDirecao = Direcao.CIMA;     estaSeMovendo = true; }
         if (teclado.isBaixo())    { ultimaDirecao = Direcao.BAIXO;    estaSeMovendo = true; }
 
-        // Recalcula dimensões para os gatilhos/interações
         double larguraPadrao = andarFrente[0].getWidth();
         double alturaPadrao = andarFrente[0].getHeight();
 
@@ -84,38 +85,66 @@ public class SalaView extends Application implements Observador {
         playerHitbox.setX(playerView.getLayoutX() + (larguraPadrao - playerHitbox.getWidth()) / 2);
         playerHitbox.setY(playerView.getLayoutY() + (alturaPadrao - playerHitbox.getHeight()));
 
-        // 3. Interação com o Professor (Troca Dinâmica de Estratégia)
+        // 3. Interação com o Professor (Com trava de repetição automática)
         if (playerHitbox.getBoundsInParent().intersects(blocoProfessor.getBoundsInParent())) {
+            // SÓ fala com o professor se a caixa de diálogo NÃO estiver ativa na tela
             if (!emDialogo) {
                 int chat = salaController.conversar();
                 emDialogo = true;
                 caixaDialogo.setVisible(true);
+                //necessarias para passar o video
+                Pane containerPrincipal = (Pane) playerView.getParent();
+                double larguraDoMapa = 1366.0;
+                double alturaDoMapa = 768.0;
 
-                // Altera o comportamento para PARADO (ignora comandos de movimento do teclado)
-                comportamentoMovimento = new MovimentoParado();
-
-                if(chat == 1) {
+                if (chat == 1) {
                     textoDialogo.setText("Professor: Luiza, que bom que chegou! Pronto para apresentar o projeto? \n\nEnergia - 5\n motivação +5");
-                } else if(chat == 2){
+                } else if (chat == 2) {
                     textoDialogo.setText("Professor: Luiza, voce é muito burra e vai repetir a materia! \n\nEnergia -10\nMotivação -20");
-                } else if (chat == 3 ){
+                } else if (chat == 3) {
                     textoDialogo.setText("Professor: Bom dia luiza, prota pra aula? \n\nO tempo passou\nconhecimento +25\nenergia -30");
-                } else {
+                } else if (chat == 0) {
                     textoDialogo.setText("Energia insuficiente");
+                } else {
+                    textoDialogo.setText("Professor: Bom luiza, prova iniciada...");
+
+// 1. Pausa o movimento mudando a estratégia para ela não andar durante o vídeo
+                    comportamentoMovimento = new MovimentoParado();
+
+                    // 2. Chama o vídeo
+                    PassarVideo.tocar("/FazendoProva.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, () -> {
+
+                        // ADAPTAÇÃO: Altera o cálculo para ir direto para as 19:00 (Fim do dia)
+                        // 660 minutos totais a partir das 08:00 do início do dia
+                        Controller.Relogio.segundosTotais = (long) (660 / Relogio.tickRate);
+
+                        // 3. Depois que o tempo mudou, o jogo checa se passou ou perdeu
+                        if (salaController.passou()) {
+                            textoDialogo.setText("Professor: Bom luiza, prova concluida, parabens!!");
+                            PassarVideo.tocar("/Passando.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, null);
+
+                            // ADAPTAÇÃO: Restaura o movimento mantendo o 'null' que seu método exige
+                            comportamentoMovimento = new MovimentoLivre();
+                        } else {
+                            textoDialogo.setText("Professor: Bom luiza, prova concluida, que pena que voce perdeu...");
+                            PassarVideo.tocar("/Perdendo.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, null);
+
+                            // ADAPTAÇÃO: Faz o mesmo aqui caso ela perca
+                            comportamentoMovimento = new MovimentoLivre();
+                        }
+                    });
                 }
             }
-            estaSeMovendo = false;
         } else {
+            //dialogo sai se o jogador sair de perto
             if (emDialogo) {
                 emDialogo = false;
                 caixaDialogo.setVisible(false);
-
-                // Quando sai da área de diálogo, restaura o movimento para LIVRE
                 comportamentoMovimento = new MovimentoLivre();
             }
         }
 
-        // 4. Renderização da Animação do Sprite
+        //Animação do Sprite
         if (estaSeMovendo) {
             if (tempoAtualNano - ultimoTempoAnimacao >= intervalo) {
                 frameIndex++; ultimoTempoAnimacao = tempoAtualNano;
@@ -135,7 +164,7 @@ public class SalaView extends Application implements Observador {
             }
         }
 
-        // 5. Portais de Transição de Cenário
+        //Transição de Cenário
         if (playerHitbox.getBoundsInParent().intersects(transicaoCantina.getBoundsInParent())) {
             gameLoop.stop();
             try {
@@ -154,7 +183,30 @@ public class SalaView extends Application implements Observador {
             } catch (Exception e) { e.printStackTrace(); }
         }
 
-        Relogio.incrementarTempo();
+        boolean statusCiclo = geralController.Atualizador();
+
+        if (statusCiclo) {
+            gameLoop.stop(); // Para tudo imediatamente!
+
+            Pane containerPrincipal = (Pane) playerView.getParent();
+            double larguraDoMapa = 1366.0;
+            double alturaDoMapa = 768.0;
+
+            caixaDialogo.setVisible(true);
+            textoDialogo.setText("O dia acabou! Luiza está pegando o ônibus de volta para o campus...");
+
+            // Toca o vídeo do ônibus e te joga para o Ponto de Ônibus ao terminar
+            PassarVideo.tocar("/AnimacaoOnibus.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, () -> {
+                try {
+                    PontoDeOnibusView.pontoEntrada = "FIM_DO_DIA";
+                    PontoDeOnibusView proximoMapa = new PontoDeOnibusView();
+                    proximoMapa.start(stage);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+            return; // Corta a execução do frame para evitar bugs visuais
+        }
         labelRelogio.setText(Relogio.obterTempoFormatado());
     }
 
@@ -171,12 +223,11 @@ public class SalaView extends Application implements Observador {
         mundoBox.setMaxSize(mapW, mapH);
 
         Group mundoGroup = new Group(mundoBox);
-
-        // CORREÇÃO: Remove a influência do tamanho interno do Group nas regras de layout do StackPane
-        mundoGroup.setManaged(false);
-
         StackPane root = new StackPane(mundoGroup);
         root.setStyle("-fx-background-color: #000000;");
+
+        // Alinha todo o conteúdo no Topo-Esquerdo da janela
+        root.setAlignment(javafx.geometry.Pos.TOP_LEFT);
 
         Scene scene = new Scene(root, 800, 600);
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/Style.css")).toExternalForm());
@@ -241,24 +292,18 @@ public class SalaView extends Application implements Observador {
             playerView.setLayoutX(660.0); playerView.setLayoutY(580.0); ultimaDirecao = Direcao.CIMA;
         }
 
-        // CORREÇÃO: Nova função de zoom que calcula a escala e centraliza manualmente a janela de visualização interna
+        // Cria uma transformação de escala explícita com pivô cravado em (0,0)
+        javafx.scene.transform.Scale redimensionamento = new javafx.scene.transform.Scale(1, 1, 0, 0);
+        mundoGroup.getTransforms().setAll(redimensionamento);
+
         Runnable aplicarZoom = () -> {
             double janelaW = root.getWidth();
             double janelaH = root.getHeight();
             if (janelaW <= 0 || janelaH <= 0) return;
-
-            // Define o menor zoom para encaixar o mapa inteiro sem distorcer nem cortar as bordas
             double zoom = Math.min(janelaW / mapW, janelaH / mapH);
 
-            mundoGroup.setScaleX(zoom);
-            mundoGroup.setScaleY(zoom);
-
-            // Reposiciona o grupo baseado no novo tamanho escalado para mantê-lo no centro exato da janela
-            double larguraEscalada = mapW * zoom;
-            double alturaEscalada = mapH * zoom;
-
-            mundoGroup.setLayoutX((janelaW - larguraEscalada) / 2.0);
-            mundoGroup.setLayoutY((janelaH - alturaEscalada) / 2.0);
+            redimensionamento.setX(zoom);
+            redimensionamento.setY(zoom);
         };
 
         root.widthProperty().addListener((obs, velho, novo) -> aplicarZoom.run());
@@ -272,14 +317,9 @@ public class SalaView extends Application implements Observador {
         primaryStage.setMaximized(true);
         primaryStage.show();
 
-        Platform.runLater(() -> {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            aplicarZoom.run();
-        });
+        javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.millis(150));
+        pause.setOnFinished(e -> aplicarZoom.run());
+        pause.play();
 
         gameLoop = new AnimationTimer() {
             @Override

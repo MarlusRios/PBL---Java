@@ -6,7 +6,6 @@ import Service.JogoService;
 
 public abstract class Interagiveis {
     //metodos que serão sobrescritos
-    public void interacao(Jogo jogo, JogoService jogoService){}
 
     public  void interacao (Jogador jogador){}
 

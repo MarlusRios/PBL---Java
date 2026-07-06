@@ -1,5 +1,6 @@
 package View;
 
+import Controller.GeralController;
 import Controller.Relogio;
 import Controller.SalaController;
 import Model.Jogador;
@@ -30,6 +31,7 @@ public class LaboratorioView extends Application implements Observador {
     private final SalaController salaController = new SalaController();
     private final List<Rectangle> obstaculos = new ArrayList<>();
     private final long intervalo = 120_000_000;
+    private final GeralController geralController = new GeralController();
 
     private ImageView playerView;
     private Movimento teclado;
@@ -64,6 +66,7 @@ public class LaboratorioView extends Application implements Observador {
     private void loopDoJogo(long tempoAtualNano) {
         double velocidad = 1.2;
         boolean estaSeMovendo = false;
+        geralController.MudarTempo();
 
         // Executa a movimentação delegada pelo padrão Strategy
         comportamentoMovimento.mover(teclado, playerView, velocidad, obstaculos, playerHitbox);
@@ -114,7 +117,30 @@ public class LaboratorioView extends Application implements Observador {
                 proximoMapa.start(stage);
             } catch (Exception e) { e.printStackTrace(); }
         }
-        Relogio.incrementarTempo();
+        boolean statusCiclo = geralController.Atualizador();
+
+        if (statusCiclo) {
+            gameLoop.stop(); // Para tudo imediatamente!
+
+            Pane containerPrincipal = (Pane) playerView.getParent();
+            double larguraDoMapa = 1366.0;
+            double alturaDoMapa = 768.0;
+
+            caixaDialogo.setVisible(true);
+            textoDialogo.setText("O dia acabou! Luiza está pegando o ônibus de volta para o campus...");
+
+            // Toca o vídeo do ônibus e te joga para o Ponto de Ônibus ao terminar
+            PassarVideo.tocar("/AnimacaoOnibus.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, () -> {
+                try {
+                    PontoDeOnibusView.pontoEntrada = "FIM_DO_DIA";
+                    PontoDeOnibusView proximoMapa = new PontoDeOnibusView();
+                    proximoMapa.start(stage);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+            return; // Corta a execução do frame para evitar bugs visuais
+        }
         labelRelogio.setText(Relogio.obterTempoFormatado());
     }
 

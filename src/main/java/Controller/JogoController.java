@@ -44,8 +44,4 @@ public class JogoController {
         jogoRepository.inicializar();
         return jogoRepository.buscarTodos();
     }
-
-    public void rodarJogo(Jogo jogo) throws InterruptedException {
-        jogoService.rodarJogo(jogo);
-    }
 }

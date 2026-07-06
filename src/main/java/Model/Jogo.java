@@ -13,7 +13,6 @@ public class Jogo implements Serializable {
     private int semana;
     private int semestre;
     private Jogador player;
-    private boolean examTime;
 
     public Jogo(String id) {
         this.id = id;
@@ -21,7 +20,6 @@ public class Jogo implements Serializable {
         this.time = 7.0;
         this.semana = 1;
         this.semestre = 1;
-        this.examTime = false;
     }
 
 
@@ -40,7 +38,4 @@ public class Jogo implements Serializable {
 
     public Jogador getPlayer() { return player; }
     public void setPlayer(Jogador player) { this.player = player; }
-
-    public boolean isExamTime() { return examTime; }
-    public void setExamTime(boolean examTime) { this.examTime = examTime; }
 }

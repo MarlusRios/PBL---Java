@@ -15,9 +15,19 @@ public class SalaController {
     public int conversar(){
         Jogo jogo = JogoRepository.getJogoAtual();
         Jogador jogador = jogo.getPlayer();
-        if (jogadorService.Prova(jogo)){
+        if (jogoService.fazerProva(jogo)){
             return -1;
         }
         return jogadorService.interagirInt(jogador, new Professor());
+    }
+
+    public boolean passou(){
+        Jogo jogo = JogoRepository.getJogoAtual();
+        Jogador jogador = jogo.getPlayer();
+        if(jogador.getDesempenho()>= 7){
+            return true;
+        }else{
+            return false;
+        }
     }
 }

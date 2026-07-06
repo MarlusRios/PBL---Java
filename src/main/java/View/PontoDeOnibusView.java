@@ -1,5 +1,6 @@
 package View;
 
+import Controller.GeralController;
 import Controller.Relogio;
 import Controller.SalaController;
 import Model.Jogador;
@@ -30,10 +31,12 @@ public class PontoDeOnibusView extends Application implements Observador {
     private final SalaController salaController = new SalaController();
     private final List<Rectangle> obstaculos = new ArrayList<>();
     private final long intervalo = 120_000_000;
+    private final GeralController geralController = new GeralController();
 
     private ImageView playerView;
     private Movimento teclado;
     private Rectangle playerHitbox;
+    private Rectangle gatilhoOnibus; // GATILHO DO ÔNIBUS ADICIONADO
     private Pane caixaDialogo;
     private Label textoDialogo;
     private ProgressBar barraEnergia;
@@ -63,6 +66,7 @@ public class PontoDeOnibusView extends Application implements Observador {
     private void loopDoJogo(long tempoAtualNano) {
         double velocidade = 1.2;
         boolean estaSeMovendo = false;
+        geralController.MudarTempo();
 
         // Executa a movimentação delegada pelo padrão Strategy
         comportamentoMovimento.mover(teclado, playerView, velocidade, obstaculos, playerHitbox);
@@ -97,6 +101,7 @@ public class PontoDeOnibusView extends Application implements Observador {
                 case ESQUERDA: playerView.setImage(andarEsquerda[0]); break;
             }
         }
+
         if (playerHitbox.getBoundsInParent().intersects(transicaoCorredor1.getBoundsInParent())) {
             gameLoop.stop();
             try {
@@ -105,7 +110,65 @@ public class PontoDeOnibusView extends Application implements Observador {
                 proximoMapa.start(stage);
             } catch (Exception e) { e.printStackTrace(); }
         }
-        Relogio.incrementarTempo();
+
+        boolean statusCiclo = geralController.Atualizador();
+
+        // LÓGICA DO TRIGGER DO ÔNIBUS INTERCEPTANDO A ENTRADA VOLUNTÁRIA
+        if (playerHitbox.getBoundsInParent().intersects(gatilhoOnibus.getBoundsInParent())) {
+            if (!emDialogo) {
+                emDialogo = true;
+                gameLoop.stop(); // Trava o tempo do jogo
+
+                Pane containerPrincipal = (Pane) playerView.getParent();
+                double larguraDoMapa = 1366.0;
+                double alturaDoMapa = 768.0;
+
+                caixaDialogo.setVisible(true);
+                textoDialogo.setText("Luiza pegou o ônibus mais cedo para voltar para o campus...");
+
+                PassarVideo.tocar("/AnimacaoOnibus.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, () -> {
+                    try {
+                        geralController.EncerrarDia(); // Força o Service a rodar o encerrarDia()
+                        PontoDeOnibusView.pontoEntrada = "FIM_DO_DIA";
+                        PontoDeOnibusView proximoMapa = new PontoDeOnibusView();
+                        proximoMapa.start(stage);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+                return;
+            }
+        }
+        // LÓGICA GLOBAL DE FIM DE DIA POR TEMPO (19h00)
+        else if (statusCiclo) {
+            gameLoop.stop();
+
+            Pane containerPrincipal = (Pane) playerView.getParent();
+            double larguraDoMapa = 1366.0;
+            double alturaDoMapa = 768.0;
+
+            caixaDialogo.setVisible(true);
+            textoDialogo.setText("O dia acabou! Luiza está pegando o ônibus de volta para o campus...");
+
+            PassarVideo.tocar("/AnimacaoOnibus.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, () -> {
+                try {
+                    PontoDeOnibusView.pontoEntrada = "FIM_DO_DIA";
+                    PontoDeOnibusView proximoMapa = new PontoDeOnibusView();
+                    proximoMapa.start(stage);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+            return;
+        } else {
+            // Limpa a caixa se ela se afastar do ponto (caso mude de ideia antes de entrar)
+            if (emDialogo) {
+                emDialogo = false;
+                caixaDialogo.setVisible(false);
+                comportamentoMovimento = new MovimentoLivre();
+            }
+        }
+
         labelRelogio.setText(Relogio.obterTempoFormatado());
     }
 
@@ -155,13 +218,13 @@ public class PontoDeOnibusView extends Application implements Observador {
         JogoRepository.getJogoAtual().getPlayer().adicionarObservador(this);
         atualizar();
 
+        // LISTA DE OBSTÁCULOS ATUALIZADA (O antigo obstáculo do ônibus foi removido daqui)
         criarObstaculo(53.0, 898.5, 70.0, 82.0, mundoBox);
         criarObstaculo(178.0, 768.5, 103.0, 56.0, mundoBox);
         criarObstaculo(394.0, 733.5, 83.0, 87.0, mundoBox);
         criarObstaculo(1206.0, 762.5, 31.0, 58.0, mundoBox);
         criarObstaculo(1357.0, 900.5, 63.0, 75.0, mundoBox);
         criarObstaculo(1362.0, 593.5, 16.0, 138.0, mundoBox);
-        criarObstaculo(823.0, 299.5, 317.0, 137.0, mundoBox);
         criarObstaculo(457.0, 34.5, 53.0, 83.0, mundoBox);
         criarObstaculo(994.0, 38.5, 56.0, 86.0, mundoBox);
         criarObstaculo(1109.0, 68.5, 131.0, 59.0, mundoBox);
@@ -170,6 +233,9 @@ public class PontoDeOnibusView extends Application implements Observador {
         criarObstaculo(mapW - 20.0, 0, 20.0, mapH, mundoBox);
         criarObstaculo(0, 0, mapW, 20.0, mundoBox);
         criarObstaculo(0, mapH - 20.0, mapW, 20.0, mundoBox);
+
+        // TRANSFORMAÇÃO DA ANTIGA COLISÃO EM UM GATILHO (TRIGGER) VERDE SEMI-TRANSPARENTE
+        gatilhoOnibus = criarTransicao(823.0, 299.5, 317.0, 137.0, mundoBox);
 
         transicaoCorredor1 = criarTransicao(648.0, 982.5, 143.0, 8.0, mundoBox);
 
