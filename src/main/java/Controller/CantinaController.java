@@ -12,6 +12,7 @@ public class CantinaController {
         if (jogo == null) return 0;
 
         Jogador jogador = jogo.getPlayer();
+
         VendedorCantina vendedor = new VendedorCantina();
         return vendedor.interacaoInt(jogador, jogo);
     }

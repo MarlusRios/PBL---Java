@@ -1,11 +1,11 @@
 package View;
 
+import Controller.CorredorGatoController;
 import Controller.Relogio;
 import Controller.SalaController;
 import Model.Jogador;
 import Repository.JogoRepository;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.Group;
@@ -25,6 +25,7 @@ import java.util.Objects;
 
 public class Corredor2View extends Application implements Observador {
     private final SalaController salaController = new SalaController();
+    private final CorredorGatoController gatoController = new CorredorGatoController();
     private final List<Rectangle> obstaculos = new ArrayList<>();
     private final long intervalo = 120_000_000;
 
@@ -55,18 +56,21 @@ public class Corredor2View extends Application implements Observador {
     private Rectangle transicaoSala;
     private Rectangle transicaoLab;
 
+    private ImageView gatoView;
+    private Rectangle gatoHitbox;
+    private Rectangle gatoSensor;
+    private int eventoGatoSorteado = -1;
+
     private void loopDoJogo(long tempoAtualNano) {
         double velocidade = 1.2;
         boolean estaSeMovendo = false;
         double movimentoX = 0;
         double movimentoY = 0;
 
-        if (!emDialogo) {
-            if (teclado.isCima())    movimentoY -= velocidade;
-            if (teclado.isBaixo())   movimentoY += velocidade;
-            if (teclado.isEsquerda()) movimentoX -= velocidade;
-            if (teclado.isDireita())  movimentoX += velocidade;
-        }
+        if (teclado.isCima())    movimentoY -= velocidade;
+        if (teclado.isBaixo())   movimentoY += velocidade;
+        if (teclado.isEsquerda()) movimentoX -= velocidade;
+        if (teclado.isDireita())  movimentoX += velocidade;
 
         if (movimentoX < 0) ultimaDirecao = Direcao.ESQUERDA;
         if (movimentoX > 0) ultimaDirecao = Direcao.DIREITA;
@@ -154,6 +158,34 @@ public class Corredor2View extends Application implements Observador {
         }
         Relogio.incrementarTempo();
         labelRelogio.setText(Relogio.obterTempoFormatado());
+
+        if(playerHitbox.getBoundsInParent().intersects(gatoSensor.getBoundsInParent())) {
+            if (!emDialogo) {
+                emDialogo = true;
+                caixaDialogo.setVisible(true);
+
+                if (eventoGatoSorteado == -1) {
+                    eventoGatoSorteado = gatoController.carinho();
+
+                    if (eventoGatoSorteado == 0) {
+                        textoDialogo.setText("Você está cansada demais para fazer carinho nele agora \n\nEnergia insuficiente (mínimo 0.2)");
+                    }
+                    else if (eventoGatoSorteado == 1) {
+                        textoDialogo.setText("Gato: Miau~ (Ronrona) \n\nVocê faz carinho no gatinho. Ele fecha os olhos e começa a ronronar de satisfação! \n\nEnergia -0.2 | Motivação +0.5");
+                    }
+                    else if (eventoGatoSorteado == 2) {
+                        textoDialogo.setText("Gato: MIAU! (Rosna) \n\nVocê tentou fazer carinho no gato, mas ele não gostou e te arranhou.");
+                    }
+                    atualizar();
+                }
+            }
+        } else {
+            if (emDialogo && eventoGatoSorteado != -1) {
+                emDialogo = false;
+                caixaDialogo.setVisible(false);
+                eventoGatoSorteado = -1;
+            }
+        }
     }
 
     @Override
@@ -221,6 +253,30 @@ public class Corredor2View extends Application implements Observador {
         transicaoSala = criarTransicao(39.0, 366.0, 28.0, 148.0, mundoBox);
         transicaoLab = criarTransicao(1668.0, 383.0, 17.0, 120.0, mundoBox);
 
+        Image imgGato = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/gato.gif")));
+        gatoView = new ImageView(imgGato);
+        gatoView.setFitWidth(imgGato.getWidth() * 3.2);
+        gatoView.setPreserveRatio(true);
+        gatoView.setLayoutX(410.0);
+        gatoView.setLayoutY(230.0);
+
+        double gatoW = imgGato.getWidth() * 3.2;
+        double gatoH = imgGato.getHeight() * 3.2;
+
+        double gHitboxW = gatoW * 0.6;
+        double gHitboxH = gatoH * 0.4;
+        double gHitboxX = 410.0 + (gatoW - gHitboxW) / 2;
+        double gHitboxY = 230.0 + (gatoH - gHitboxH);
+
+        gatoHitbox = new Rectangle(gHitboxX, gHitboxY, gHitboxW, gHitboxH);
+        gatoHitbox.setFill(Color.TRANSPARENT);
+
+        gatoSensor = new Rectangle(gHitboxX - 20, gHitboxY - 20, gHitboxW + 40, gHitboxH + 40);
+        gatoSensor.setFill(Color.TRANSPARENT);
+
+        mundoBox.getChildren().addAll(gatoView, gatoHitbox, gatoSensor);
+        obstaculos.add(gatoHitbox);
+
         inicializarImagensAnimacao();
         playerView = new ImageView(andarFrente[0]);
         mundoBox.getChildren().add(playerView);
@@ -254,7 +310,6 @@ public class Corredor2View extends Application implements Observador {
         primaryStage.setMaximized(true);
         primaryStage.show();
 
-        // FIX para o Wayland/GNOME (Linux)
         javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.millis(150));
         pause.setOnFinished(e -> aplicarZoom.run());
         pause.play();
@@ -306,20 +361,20 @@ public class Corredor2View extends Application implements Observador {
 
     private void inicializarCaixaDialogo(Pane root, double mapW, double mapH) {
         caixaDialogo = new Pane();
-        caixaDialogo.setPrefSize(650, 110);
+        caixaDialogo.setPrefSize(650, 145);
         caixaDialogo.getStyleClass().add("caixa-dialogo");
 
         textoDialogo = new Label();
         textoDialogo.getStyleClass().add("texto-dialogo");
         textoDialogo.setLayoutX(20);
-        textoDialogo.setLayoutY(20);
+        textoDialogo.setLayoutY(15);
         textoDialogo.setWrapText(true);
         textoDialogo.setPrefWidth(610);
 
         caixaDialogo.getChildren().add(textoDialogo);
         caixaDialogo.setVisible(false);
         caixaDialogo.setLayoutX((mapW - 650) / 2.0);
-        caixaDialogo.setLayoutY(mapH - 110 - 40);
+        caixaDialogo.setLayoutY(mapH - 145 - 25);
         root.getChildren().add(caixaDialogo);
     }
 
