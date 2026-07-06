@@ -14,6 +14,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.Pane;
+import Repository.JogoRepository;
 
 import Controller.JogoController;
 import Model.Jogo;

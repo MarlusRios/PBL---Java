@@ -14,7 +14,7 @@ public class VendedorCantina extends Interagiveis {
 
     @Override // interação com o vendedor da cantina modificando os atributos do jogador
     public int interacaoInt(Jogador jogador, Jogo jogo){
-        if(jogador.getDinheiro() >= 10) {
+        if(jogador.getDinheiro() >= 20) {
             jogador.setSaude(jogador.getSaude() + 10);
             jogador.setEnergia(jogador.getEnergia() + 10);
             jogador.setDinheiro(jogador.getDinheiro() - 20);

@@ -1,5 +1,6 @@
 package View;
 
+import Controller.CantinaController;
 import Controller.Relogio;
 import Controller.SalaController;
 import Model.Jogador;
@@ -25,6 +26,7 @@ import java.util.Objects;
 
 public class CantinaView extends Application implements Observador {
     private final SalaController salaController = new SalaController();
+    private final CantinaController cantinaController = new CantinaController();
     private final List<Rectangle> obstaculos = new ArrayList<>();
     private final long intervalo = 120_000_000;
 
@@ -55,18 +57,19 @@ public class CantinaView extends Application implements Observador {
     private Direcao ultimaDirecao = Direcao.CIMA;
     private boolean emDialogo = false;
 
+    private Rectangle blocoVendedor;
+    private int eventoCantinaSorteado = -1;
+
     private void loopDoJogo(long tempoAtualNano) {
         double velocidade = 1.2;
         boolean estaSeMovendo = false;
         double movimentoX = 0;
         double movimentoY = 0;
 
-        if (!emDialogo) {
-            if (teclado.isCima())    movimentoY -= velocidade;
-            if (teclado.isBaixo())   movimentoY += velocidade;
-            if (teclado.isEsquerda()) movimentoX -= velocidade;
-            if (teclado.isDireita())  movimentoX += velocidade;
-        }
+        if (teclado.isCima())    movimentoY -= velocidade;
+        if (teclado.isBaixo())   movimentoY += velocidade;
+        if (teclado.isEsquerda()) movimentoX -= velocidade;
+        if (teclado.isDireita())  movimentoX += velocidade;
 
         if (movimentoX < 0) ultimaDirecao = Direcao.ESQUERDA;
         if (movimentoX > 0) ultimaDirecao = Direcao.DIREITA;
@@ -157,6 +160,34 @@ public class CantinaView extends Application implements Observador {
 
         Relogio.incrementarTempo();
         labelRelogio.setText(Relogio.obterTempoFormatado());
+
+        if (playerHitbox.getBoundsInParent().intersects(blocoVendedor.getBoundsInParent())) {
+            if (!emDialogo) {
+                emDialogo = true;
+                caixaDialogo.setVisible(true);
+
+                if (eventoCantinaSorteado == -1) {
+                    eventoCantinaSorteado = cantinaController.comprarLanche();
+
+                    if (eventoCantinaSorteado == 0) {
+                        textoDialogo.setText("Vendedor: O lanche custa R$20,00. Volte quando tiver dinheiro suficiente.");
+                    }
+                    else if (eventoCantinaSorteado == 1) {
+                        textoDialogo.setText("Vendedor: Aqui está o seu lanche! \n\nVocê comeu um salgado quentinho com suco natural. \n\nDinheiro -R$20 | Energia +10 | Saúde +10 | Motivação +10");
+                    }
+                    else if (eventoCantinaSorteado == 2) {
+                        textoDialogo.setText("Vendedor: Próximo da fila!... Espera aí! \n\nQue azar! De repente o pavilhão lotou e você pegou uma FILA GRANDE! Você perdeu tempo e paciência esperando na fila.");
+                    }
+                    atualizar();
+                }
+            }
+        } else {
+            if (emDialogo && eventoCantinaSorteado != -1) {
+                emDialogo = false;
+                caixaDialogo.setVisible(false);
+                eventoCantinaSorteado = -1;
+            }
+        }
     }
 
     @Override
@@ -242,9 +273,22 @@ public class CantinaView extends Application implements Observador {
         criarObstaculo(878.0, 0.5, 205.0, 102.0, mundoBox);
         criarObstaculo(1192.0, 2.5, 405.0, 69.0, mundoBox);
 
-        // Transições
         transicaoCorredor1 = criarTransicao(777.0, 69.5, 91.0, 44.0, mundoBox);
         transicaoSala = criarTransicao(1090.0, 64.5, 96.0, 47.0, mundoBox);
+
+        double balcaoX = 1333.0;
+        double balcaoY = 288.5;
+        double balcaoW = 266.0;
+        double balcaoH = 425.0;
+
+        Rectangle balcaoHitbox = new Rectangle(balcaoX, balcaoY, balcaoW, balcaoH);
+        balcaoHitbox.setFill(Color.TRANSPARENT);
+        mundoBox.getChildren().add(balcaoHitbox);
+        obstaculos.add(balcaoHitbox);
+
+        blocoVendedor = new Rectangle(balcaoX - 30.0, balcaoY, balcaoW + 30.0, balcaoH);
+        blocoVendedor.setFill(Color.TRANSPARENT);
+        mundoBox.getChildren().add(blocoVendedor);
 
         inicializarImagensAnimacao();
         playerView = new ImageView(andarFrente[0]);
@@ -331,7 +375,7 @@ public class CantinaView extends Application implements Observador {
 
     private void inicializarCaixaDialogo(Pane root, double mapW, double mapH) {
         caixaDialogo = new Pane();
-        caixaDialogo.setPrefSize(650, 110);
+        caixaDialogo.setPrefSize(650, 145);
         caixaDialogo.getStyleClass().add("caixa-dialogo");
 
         textoDialogo = new Label();
@@ -344,7 +388,7 @@ public class CantinaView extends Application implements Observador {
         caixaDialogo.getChildren().add(textoDialogo);
         caixaDialogo.setVisible(false);
         caixaDialogo.setLayoutX((mapW - 650) / 2.0);
-        caixaDialogo.setLayoutY(mapH - 110 - 40);
+        caixaDialogo.setLayoutY(mapH - 145 - 25);
         root.getChildren().add(caixaDialogo);
     }
 

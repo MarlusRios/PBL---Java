@@ -1,5 +1,6 @@
 package View;
 
+import Controller.CorredorCachorroController;
 import Controller.Relogio;
 import Controller.SalaController;
 import Model.Jogador;
@@ -25,6 +26,7 @@ import java.util.Objects;
 
 public class Corredor1View extends Application implements Observador {
     private final SalaController salaController = new SalaController();
+    private final CorredorCachorroController cachorroController = new CorredorCachorroController();
     private final List<Rectangle> obstaculos = new ArrayList<>();
     private final long intervalo = 120_000_000;
 
@@ -55,18 +57,21 @@ public class Corredor1View extends Application implements Observador {
     private Direcao ultimaDirecao = Direcao.CIMA;
     private boolean emDialogo = false;
 
+    private ImageView cachorroView;
+    private Rectangle cachorroHitbox;
+    private Rectangle cachorroSensor;
+    private int eventoCachorroSorteado = -1;
+
     private void loopDoJogo(long tempoAtualNano) {
         double velocidade = 1.2;
         boolean estaSeMovendo = false;
         double movimentoX = 0;
         double movimentoY = 0;
 
-        if (!emDialogo) {
-            if (teclado.isCima())    movimentoY -= velocidade;
-            if (teclado.isBaixo())   movimentoY += velocidade;
-            if (teclado.isEsquerda()) movimentoX -= velocidade;
-            if (teclado.isDireita())  movimentoX += velocidade;
-        }
+        if (teclado.isCima())    movimentoY -= velocidade;
+        if (teclado.isBaixo())   movimentoY += velocidade;
+        if (teclado.isEsquerda()) movimentoX -= velocidade;
+        if (teclado.isDireita())  movimentoX += velocidade;
 
         if (movimentoX < 0) ultimaDirecao = Direcao.ESQUERDA;
         if (movimentoX > 0) ultimaDirecao = Direcao.DIREITA;
@@ -149,7 +154,36 @@ public class Corredor1View extends Application implements Observador {
         }
         Relogio.incrementarTempo();
         labelRelogio.setText(Relogio.obterTempoFormatado());
+
+        if(playerHitbox.getBoundsInParent().intersects(cachorroSensor.getBoundsInParent())) {
+            if (!emDialogo) {
+                emDialogo = true;
+                caixaDialogo.setVisible(true);
+
+                if (eventoCachorroSorteado == -1) {
+                    eventoCachorroSorteado = cachorroController.carinho();
+
+                    if (eventoCachorroSorteado == 0) {
+                        textoDialogo.setText("Você olha para o Caramelo... \n\nMas você está cansada demais para conseguir brincar ou fazer carinho nele agora. \n\nEnergia insuficiente.");
+                    }
+                    else if (eventoCachorroSorteado == 1) {
+                        textoDialogo.setText("Caramelo: Au au! \n\nVocê encontrou o doguinho do campus e fez carinho nele!\n\nEnergia -0.2 | Motivação +0.5");
+                    }
+                    else if (eventoCachorroSorteado == 2) {
+                        textoDialogo.setText("Caramelo: GRRR... AU! \n\nO doguinho te mordeu");
+                    }
+                    atualizar();
+                }
+            }
+        } else {
+            if (emDialogo && eventoCachorroSorteado != -1) {
+                emDialogo = false;
+                caixaDialogo.setVisible(false);
+                eventoCachorroSorteado = -1;
+            }
+        }
     }
+
 
     @Override
     public void start(Stage primaryStage) {
@@ -215,6 +249,28 @@ public class Corredor1View extends Application implements Observador {
         transicaoPonto = criarTransicao(55.0, 380.5, 21.0, 134.0, mundoBox);
         transicaoCantina = criarTransicao(1578.0, 386.5, 19.0, 127.0, mundoBox);
 
+        Image imgCachorro = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/cachorro.gif")));
+        cachorroView = new ImageView(imgCachorro);
+        cachorroView.setLayoutX(950.0);
+        cachorroView.setLayoutY(570.0);
+
+        double dogW = imgCachorro.getWidth();
+        double dogH = imgCachorro.getHeight();
+
+        double hitboxW = dogW * 0.6;
+        double hitboxH = dogH * 0.4;
+        double hitboxX = 950.0 + (dogW - hitboxW) / 2;
+        double hitboxY = 570.0 + (dogH - hitboxH);
+
+        cachorroHitbox = new Rectangle(hitboxX, hitboxY, hitboxW, hitboxH);
+        cachorroHitbox.setFill(Color.TRANSPARENT);
+
+        cachorroSensor = new Rectangle(hitboxX - 15, hitboxY - 15, hitboxW + 30, hitboxH + 30);
+        cachorroSensor.setFill(Color.TRANSPARENT);
+
+        mundoBox.getChildren().addAll(cachorroView, cachorroHitbox, cachorroSensor);
+        obstaculos.add(cachorroHitbox);
+
         inicializarImagensAnimacao();
         playerView = new ImageView(andarFrente[0]);
         mundoBox.getChildren().add(playerView);
@@ -274,7 +330,6 @@ public class Corredor1View extends Application implements Observador {
         root.getChildren().add(r);
         return r;
     }
-
     private void inicializarImagensAnimacao() {
         andarCostas = new Image[]{
                 new Image(Objects.requireNonNull(getClass().getResourceAsStream("/sprite_BF_parada.png"))),
@@ -300,20 +355,20 @@ public class Corredor1View extends Application implements Observador {
 
     private void inicializarCaixaDialogo(Pane root, double mapW, double mapH) {
         caixaDialogo = new Pane();
-        caixaDialogo.setPrefSize(650, 110);
+        caixaDialogo.setPrefSize(650, 145);
         caixaDialogo.getStyleClass().add("caixa-dialogo");
 
         textoDialogo = new Label();
         textoDialogo.getStyleClass().add("texto-dialogo");
         textoDialogo.setLayoutX(20);
-        textoDialogo.setLayoutY(20);
+        textoDialogo.setLayoutY(15);
         textoDialogo.setWrapText(true);
         textoDialogo.setPrefWidth(610);
 
         caixaDialogo.getChildren().add(textoDialogo);
         caixaDialogo.setVisible(false);
         caixaDialogo.setLayoutX((mapW - 650) / 2.0);
-        caixaDialogo.setLayoutY(mapH - 110 - 40);
+        caixaDialogo.setLayoutY(mapH - 145 - 25);
         root.getChildren().add(caixaDialogo);
     }
 
