@@ -1,15 +1,11 @@
 package View;
 
-import Controller.GeralController;
+import Controller.CorredorCachorroController;
 import Controller.Relogio;
 import Controller.SalaController;
 import Model.Jogador;
 import Repository.JogoRepository;
-import View.Strategy.ComportamentoMovimento;
-import View.Strategy.MovimentoLivre;
-import View.Strategy.MovimentoParado;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.Group;
@@ -29,9 +25,9 @@ import java.util.Objects;
 
 public class Corredor1View extends Application implements Observador {
     private final SalaController salaController = new SalaController();
+    private final CorredorCachorroController cachorroController = new CorredorCachorroController();
     private final List<Rectangle> obstaculos = new ArrayList<>();
     private final long intervalo = 120_000_000;
-    private final GeralController geralController = new GeralController();
 
     private ImageView playerView;
     private Movimento teclado;
@@ -60,24 +56,61 @@ public class Corredor1View extends Application implements Observador {
     private Direcao ultimaDirecao = Direcao.CIMA;
     private boolean emDialogo = false;
 
-    // Atributo do Padrão Strategy
-    private ComportamentoMovimento comportamentoMovimento;
+    private ImageView cachorroView;
+    private Rectangle cachorroHitbox;
+    private Rectangle cachorroSensor;
+    private int eventoCachorroSorteado = -1;
 
     private void loopDoJogo(long tempoAtualNano) {
-        double velocidad = 1.2;
+        double velocidade = 1.2;
         boolean estaSeMovendo = false;
-        geralController.MudarTempo();
+        double movimentoX = 0;
+        double movimentoY = 0;
 
-        // Executa a movimentação delegada pelo padrão Strategy
-        comportamentoMovimento.mover(teclado, playerView, velocidad, obstaculos, playerHitbox);
+        if (teclado.isCima())    movimentoY -= velocidade;
+        if (teclado.isBaixo())   movimentoY += velocidade;
+        if (teclado.isEsquerda()) movimentoX -= velocidade;
+        if (teclado.isDireita())  movimentoX += velocidade;
 
-        if (teclado.isEsquerda()) { ultimaDirecao = Direcao.ESQUERDA; estaSeMovendo = true; }
-        if (teclado.isDireita())  { ultimaDirecao = Direcao.DIREITA;  estaSeMovendo = true; }
-        if (teclado.isCima())     { ultimaDirecao = Direcao.CIMA;     estaSeMovendo = true; }
-        if (teclado.isBaixo())    { ultimaDirecao = Direcao.BAIXO;    estaSeMovendo = true; }
+        if (movimentoX < 0) ultimaDirecao = Direcao.ESQUERDA;
+        if (movimentoX > 0) ultimaDirecao = Direcao.DIREITA;
+        if (movimentoY < 0) ultimaDirecao = Direcao.CIMA;
+        if (movimentoY > 0) ultimaDirecao = Direcao.BAIXO;
+
+        if (movimentoX != 0 || movimentoY != 0) estaSeMovendo = true;
 
         double larguraPadrao = andarFrente[0].getWidth();
         double alturaPadrao = andarFrente[0].getHeight();
+
+        double proximoX = playerView.getLayoutX() + movimentoX;
+        playerHitbox.setX(proximoX + (larguraPadrao - playerHitbox.getWidth()) / 2);
+        playerHitbox.setY(playerView.getLayoutY() + (alturaPadrao - playerHitbox.getHeight()));
+
+        boolean colidiuX = false;
+        for (Rectangle obs : obstaculos) {
+            if (playerHitbox.getBoundsInParent().intersects(obs.getBoundsInParent())) {
+                colidiuX = true;
+                break;
+            }
+        }
+        if (!colidiuX && movimentoX != 0) {
+            playerView.setLayoutX(proximoX);
+        }
+
+        double proximoY = playerView.getLayoutY() + movimentoY;
+        playerHitbox.setX(playerView.getLayoutX() + (larguraPadrao - playerHitbox.getWidth()) / 2);
+        playerHitbox.setY(proximoY + (alturaPadrao - playerHitbox.getHeight()));
+
+        boolean colidiuY = false;
+        for (Rectangle obs : obstaculos) {
+            if (playerHitbox.getBoundsInParent().intersects(obs.getBoundsInParent())) {
+                colidiuY = true;
+                break;
+            }
+        }
+        if (!colidiuY && movimentoY != 0) {
+            playerView.setLayoutY(proximoY);
+        }
 
         playerHitbox.setX(playerView.getLayoutX() + (larguraPadrao - playerHitbox.getWidth()) / 2);
         playerHitbox.setY(playerView.getLayoutY() + (alturaPadrao - playerHitbox.getHeight()));
@@ -118,32 +151,38 @@ public class Corredor1View extends Application implements Observador {
                 proximoMapa.start(stage);
             } catch (Exception e) { e.printStackTrace(); }
         }
-        boolean statusCiclo = geralController.Atualizador();
-
-        if (statusCiclo) {
-            gameLoop.stop(); // Para tudo imediatamente!
-
-            Pane containerPrincipal = (Pane) playerView.getParent();
-            double larguraDoMapa = 1366.0;
-            double alturaDoMapa = 768.0;
-
-            caixaDialogo.setVisible(true);
-            textoDialogo.setText("O dia acabou! Luiza está pegando o ônibus de volta para o campus...");
-
-            // Toca o vídeo do ônibus e te joga para o Ponto de Ônibus ao terminar
-            PassarVideo.tocar("/AnimacaoOnibus.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, () -> {
-                try {
-                    PontoDeOnibusView.pontoEntrada = "FIM_DO_DIA";
-                    PontoDeOnibusView proximoMapa = new PontoDeOnibusView();
-                    proximoMapa.start(stage);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
-            return; // Corta a execução do frame para evitar bugs visuais
-        }
+        Relogio.incrementarTempo();
         labelRelogio.setText(Relogio.obterTempoFormatado());
+
+        if(playerHitbox.getBoundsInParent().intersects(cachorroSensor.getBoundsInParent())) {
+            if (!emDialogo) {
+                emDialogo = true;
+                caixaDialogo.setVisible(true);
+
+                if (eventoCachorroSorteado == -1) {
+                    eventoCachorroSorteado = cachorroController.carinho();
+
+                    if (eventoCachorroSorteado == 0) {
+                        textoDialogo.setText("Você olha para o Caramelo... \n\nMas você está cansada demais para conseguir brincar ou fazer carinho nele agora.\n\nEnergia insuficiente (mínimo 0.2)");
+                    }
+                    else if (eventoCachorroSorteado == 1) {
+                        textoDialogo.setText("Caramelo: Au au! \n\nVocê encontrou o doguinho do campus e fez carinho nele! \n\nEnergia -0.2 | Motivação +0.5");
+                    }
+                    else if (eventoCachorroSorteado == 2) {
+                        textoDialogo.setText("Caramelo: GRRR... AU! \n\nO doguinho se assustou e te mordeu!");
+                    }
+                    atualizar();
+                }
+            }
+        } else {
+            if (emDialogo && eventoCachorroSorteado != -1) {
+                emDialogo = false;
+                caixaDialogo.setVisible(false);
+                eventoCachorroSorteado = -1;
+            }
+        }
     }
+
 
     @Override
     public void start(Stage primaryStage) {
@@ -164,9 +203,6 @@ public class Corredor1View extends Application implements Observador {
         Scene scene = new Scene(root, 800, 600);
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/Style.css")).toExternalForm());
         teclado = new Movimento(scene);
-
-        // Inicializa o comportamento padrão do Strategy
-        comportamentoMovimento = new MovimentoLivre();
 
         ImageView mapa = new ImageView(imagemMapa);
         mundoBox.getChildren().add(mapa);
@@ -211,6 +247,28 @@ public class Corredor1View extends Application implements Observador {
 
         transicaoPonto = criarTransicao(55.0, 380.5, 21.0, 134.0, mundoBox);
         transicaoCantina = criarTransicao(1578.0, 386.5, 19.0, 127.0, mundoBox);
+
+        Image imgCachorro = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/cachorro.gif")));
+        cachorroView = new ImageView(imgCachorro);
+        cachorroView.setLayoutX(950.0);
+        cachorroView.setLayoutY(570.0);
+
+        double dogW = imgCachorro.getWidth();
+        double dogH = imgCachorro.getHeight();
+
+        double hitboxW = dogW * 0.6;
+        double hitboxH = dogH * 0.75;
+        double hitboxX = 950.0 + (dogW - hitboxW) / 2;
+        double hitboxY = 570.0 + (dogH - hitboxH);
+
+        cachorroHitbox = new Rectangle(hitboxX, hitboxY, hitboxW, hitboxH);
+        cachorroHitbox.setFill(Color.TRANSPARENT);
+
+        cachorroSensor = new Rectangle(hitboxX - 15, hitboxY - 15, hitboxW + 30, hitboxH + 30);
+        cachorroSensor.setFill(Color.TRANSPARENT);
+
+        mundoBox.getChildren().addAll(cachorroView, cachorroHitbox, cachorroSensor);
+        obstaculos.add(cachorroHitbox);
 
         inicializarImagensAnimacao();
         playerView = new ImageView(andarFrente[0]);
@@ -270,7 +328,6 @@ public class Corredor1View extends Application implements Observador {
         root.getChildren().add(r);
         return r;
     }
-
     private void inicializarImagensAnimacao() {
         andarCostas = new Image[]{
                 new Image(Objects.requireNonNull(getClass().getResourceAsStream("/sprite_BF_parada.png"))),
@@ -296,20 +353,20 @@ public class Corredor1View extends Application implements Observador {
 
     private void inicializarCaixaDialogo(Pane root, double mapW, double mapH) {
         caixaDialogo = new Pane();
-        caixaDialogo.setPrefSize(650, 110);
+        caixaDialogo.setPrefSize(650, 145);
         caixaDialogo.getStyleClass().add("caixa-dialogo");
 
         textoDialogo = new Label();
         textoDialogo.getStyleClass().add("texto-dialogo");
         textoDialogo.setLayoutX(20);
-        textoDialogo.setLayoutY(20);
+        textoDialogo.setLayoutY(15);
         textoDialogo.setWrapText(true);
         textoDialogo.setPrefWidth(610);
 
         caixaDialogo.getChildren().add(textoDialogo);
         caixaDialogo.setVisible(false);
         caixaDialogo.setLayoutX((mapW - 650) / 2.0);
-        caixaDialogo.setLayoutY(mapH - 110 - 40);
+        caixaDialogo.setLayoutY(mapH - 145 - 25);
         root.getChildren().add(caixaDialogo);
     }
 
