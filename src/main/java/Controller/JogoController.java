@@ -11,7 +11,10 @@ public class JogoController {
     private final JogoRepository jogoRepository = new JogoRepository();
     private final JogoService jogoService = new JogoService();
 
+    //metodo que adiciona uma nova partida nos saves
     public Jogo novaPartida(String id) {
+        jogoRepository.inicializar();
+
         Jogo jogo = jogoService.criarJogo(id);
         jogoRepository.salvar(jogo);
         JogoRepository.setJogoAtual(jogo);

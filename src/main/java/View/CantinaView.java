@@ -1,11 +1,16 @@
 package View;
 
 import Controller.CantinaController;
+import Controller.GeralController;
 import Controller.Relogio;
 import Controller.SalaController;
 import Model.Jogador;
 import Repository.JogoRepository;
+import View.Strategy.ComportamentoMovimento;
+import View.Strategy.MovimentoLivre;
+import View.Strategy.MovimentoParado;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.Group;
@@ -18,16 +23,17 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.paint.Color;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.Button;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class CantinaView extends Application implements Observador {
-    private final SalaController salaController = new SalaController();
     private final CantinaController cantinaController = new CantinaController();
     private final List<Rectangle> obstaculos = new ArrayList<>();
     private final long intervalo = 120_000_000;
+    private final GeralController geralController = new GeralController();
 
     private ImageView playerView;
     private Movimento teclado;
@@ -37,6 +43,11 @@ public class CantinaView extends Application implements Observador {
     private ProgressBar barraEnergia;
     private Label textoBarraEnergia;
     private StackPane containerEnergia;
+
+    private Button btnStatus;
+    private AtributosView painelAtributos;
+
+    private Rectangle blocoVendedor;
 
     public static String pontoEntrada = "CORREDOR";
     private Stage stage;
@@ -56,67 +67,58 @@ public class CantinaView extends Application implements Observador {
     private Direcao ultimaDirecao = Direcao.CIMA;
     private boolean emDialogo = false;
 
-    private Rectangle blocoVendedor;
-    private int eventoCantinaSorteado = -1;
+    private ComportamentoMovimento comportamentoMovimento;
 
     private void loopDoJogo(long tempoAtualNano) {
         double velocidade = 1.2;
         boolean estaSeMovendo = false;
-        double movimentoX = 0;
-        double movimentoY = 0;
+        geralController.MudarTempo();
 
-        if (teclado.isCima())    movimentoY -= velocidade;
-        if (teclado.isBaixo())   movimentoY += velocidade;
-        if (teclado.isEsquerda()) movimentoX -= velocidade;
-        if (teclado.isDireita())  movimentoX += velocidade;
+        int statusFormatura = geralController.Formatura();
 
-        if (movimentoX < 0) ultimaDirecao = Direcao.ESQUERDA;
-        if (movimentoX > 0) ultimaDirecao = Direcao.DIREITA;
-        if (movimentoY < 0) ultimaDirecao = Direcao.CIMA;
-        if (movimentoY > 0) ultimaDirecao = Direcao.BAIXO;
+        if (statusFormatura != 0) {
+            gameLoop.stop();
 
-        if (movimentoX != 0 || movimentoY != 0) estaSeMovendo = true;
+            Pane containerPrincipal = (Pane) playerView.getParent();
+            double larguraDoMapa = 1366.0;
+            double alturaDoMapa = 768.0;
+
+            if (statusFormatura == 1) {
+                PassarVideo.tocar("/formaturaNormal.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, () -> {
+                    geralController.EncerrarJogo();
+                    try {
+                        TelaFimDeJogoView telaFinal = new TelaFimDeJogoView();
+                        telaFinal.start(stage);
+                    } catch (Exception e) { e.printStackTrace(); }
+                });
+            } else if (statusFormatura == 2) {
+                PassarVideo.tocar("/formaturaCachorro.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, () -> {
+                    geralController.EncerrarJogo();
+                    try {
+                        TelaFimDeJogoView telaFinal = new TelaFimDeJogoView();
+                        telaFinal.start(stage);
+                    } catch (Exception e) { e.printStackTrace(); }
+                });
+            }
+            return;
+        }
+
+        comportamentoMovimento.mover(teclado, playerView, velocidade, obstaculos, playerHitbox);
+
+        if (teclado.isEsquerda()) { ultimaDirecao = Direcao.ESQUERDA; estaSeMovendo = true; }
+        if (teclado.isDireita())  { ultimaDirecao = Direcao.DIREITA;  estaSeMovendo = true; }
+        if (teclado.isCima())     { ultimaDirecao = Direcao.CIMA;     estaSeMovendo = true; }
+        if (teclado.isBaixo())    { ultimaDirecao = Direcao.BAIXO;    estaSeMovendo = true; }
 
         double larguraPadrao = andarFrente[0].getWidth();
         double alturaPadrao = andarFrente[0].getHeight();
-
-        double proximoX = playerView.getLayoutX() + movimentoX;
-        playerHitbox.setX(proximoX + (larguraPadrao - playerHitbox.getWidth()) / 2);
-        playerHitbox.setY(playerView.getLayoutY() + (alturaPadrao - playerHitbox.getHeight()));
-
-        boolean colidiuX = false;
-        for (Rectangle obs : obstaculos) {
-            if (playerHitbox.getBoundsInParent().intersects(obs.getBoundsInParent())) {
-                colidiuX = true;
-                break;
-            }
-        }
-        if (!colidiuX && movimentoX != 0) {
-            playerView.setLayoutX(proximoX);
-        }
-
-        double proximoY = playerView.getLayoutY() + movimentoY;
-        playerHitbox.setX(playerView.getLayoutX() + (larguraPadrao - playerHitbox.getWidth()) / 2);
-        playerHitbox.setY(proximoY + (alturaPadrao - playerHitbox.getHeight()));
-
-        boolean colidiuY = false;
-        for (Rectangle obs : obstaculos) {
-            if (playerHitbox.getBoundsInParent().intersects(obs.getBoundsInParent())) {
-                colidiuY = true;
-                break;
-            }
-        }
-        if (!colidiuY && movimentoY != 0) {
-            playerView.setLayoutY(proximoY);
-        }
 
         playerHitbox.setX(playerView.getLayoutX() + (larguraPadrao - playerHitbox.getWidth()) / 2);
         playerHitbox.setY(playerView.getLayoutY() + (alturaPadrao - playerHitbox.getHeight()));
 
         if (estaSeMovendo) {
             if (tempoAtualNano - ultimoTempoAnimacao >= intervalo) {
-                frameIndex++;
-                ultimoTempoAnimacao = tempoAtualNano;
+                frameIndex++; ultimoTempoAnimacao = tempoAtualNano;
                 switch (ultimaDirecao) {
                     case BAIXO:    playerView.setImage(andarFrente[frameIndex % andarFrente.length]); break;
                     case CIMA:     playerView.setImage(andarCostas[frameIndex % andarCostas.length]); break;
@@ -130,6 +132,28 @@ public class CantinaView extends Application implements Observador {
                 case CIMA:     playerView.setImage(andarCostas[0]); break;
                 case DIREITA:  playerView.setImage(andarDireita[0]); break;
                 case ESQUERDA: playerView.setImage(andarEsquerda[0]); break;
+            }
+        }
+
+        if (playerHitbox.getBoundsInParent().intersects(blocoVendedor.getBoundsInParent())) {
+            if (!emDialogo) {
+                emDialogo = true;
+                caixaDialogo.setVisible(true);
+
+                int chat = cantinaController.comprar();
+
+                if (chat == 1) {
+                    textoDialogo.setText("Vendedor: ta aqui o seu lanche coxinha com suco! \n\nGanha energia, saude e motivação\nDinheiro - R$ 20");
+                } else if(chat == 2) {
+                    textoDialogo.setText("Vendedor: Perdão a demora, a fila estava muito grande.\nO tempo passa\nGanha energia, saude e motivação\nDinheiro - R$ 20");
+                } else if (chat == 0) {
+                    textoDialogo.setText("Dinheiro insuficiente");
+                }
+            }
+        } else {
+            if (emDialogo) {
+                emDialogo = false;
+                caixaDialogo.setVisible(false);
             }
         }
 
@@ -151,36 +175,30 @@ public class CantinaView extends Application implements Observador {
             } catch (Exception e) { e.printStackTrace(); }
         }
 
-        Relogio.incrementarTempo();
-        labelRelogio.setText(Relogio.obterTempoFormatado());
+        boolean statusCiclo = geralController.Atualizador();
 
-        if (playerHitbox.getBoundsInParent().intersects(blocoVendedor.getBoundsInParent())) {
-            if (!emDialogo) {
-                emDialogo = true;
-                caixaDialogo.setVisible(true);
+        if (statusCiclo) {
+            gameLoop.stop();
 
-                if (eventoCantinaSorteado == -1) {
-                    eventoCantinaSorteado = cantinaController.comprarLanche();
+            Pane containerPrincipal = (Pane) playerView.getParent();
+            double larguraDoMapa = 1366.0;
+            double alturaDoMapa = 768.0;
 
-                    if (eventoCantinaSorteado == 0) {
-                        textoDialogo.setText("Vendedor: Você está sem grana! O lanche completo aqui custa R$ 20. Volte quando tiver dinheiro suficiente.");
-                    }
-                    else if (eventoCantinaSorteado == 1) {
-                        textoDialogo.setText("Vendedor: Aqui está o seu lanche! \n\nVocê comeu um salgado quentinho com suco natural. \n\nDinheiro -R$20 | Energia +10 | Saúde +10 | Motivação +10");
-                    }
-                    else if (eventoCantinaSorteado == 2) {
-                        textoDialogo.setText("Vendedor: Próximo da fila!... Espera aí! \n\nQue azar! De repente o pavilhão lotou e você pegou uma FILA GRANDE! Você perdeu tempo e paciência esperando na fila.");
-                    }
-                    atualizar();
+            caixaDialogo.setVisible(true);
+            textoDialogo.setText("O dia acabou! Luiza está pegando o ônibus de volta para casa...");
+
+            PassarVideo.tocar("/AnimacaoOnibus.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, () -> {
+                try {
+                    PontoDeOnibusView.pontoEntrada = "FIM_DO_DIA";
+                    PontoDeOnibusView proximoMapa = new PontoDeOnibusView();
+                    proximoMapa.start(stage);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            }
-        } else {
-            if (emDialogo && eventoCantinaSorteado != -1) {
-                emDialogo = false;
-                caixaDialogo.setVisible(false);
-                eventoCantinaSorteado = -1;
-            }
+            });
+            return;
         }
+        labelRelogio.setText(Relogio.obterTempoFormatado());
     }
 
     @Override
@@ -199,17 +217,20 @@ public class CantinaView extends Application implements Observador {
         StackPane root = new StackPane(mundoGroup);
         root.setStyle("-fx-background-color: #000000;");
 
+        root.setAlignment(javafx.geometry.Pos.CENTER);
+
         Scene scene = new Scene(root, 800, 600);
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/Style.css")).toExternalForm());
         teclado = new Movimento(scene);
+
+        comportamentoMovimento = new MovimentoLivre();
 
         ImageView mapa = new ImageView(imagemMapa);
         mundoBox.getChildren().add(mapa);
 
         labelRelogio = new Label("0:00");
         labelRelogio.setStyle("-fx-font-size: 24px; -fx-text-fill: white; -fx-background-color: rgba(0, 0, 0, 0.7); -fx-padding: 5px; -fx-background-radius: 5px;");
-        labelRelogio.setLayoutX(20);
-        labelRelogio.setLayoutY(20);
+        labelRelogio.setLayoutX(20); labelRelogio.setLayoutY(20);
         mundoBox.getChildren().add(labelRelogio);
 
         barraEnergia = new ProgressBar(1.0);
@@ -221,17 +242,17 @@ public class CantinaView extends Application implements Observador {
 
         containerEnergia = new StackPane();
         containerEnergia.getChildren().addAll(barraEnergia, textoBarraEnergia);
-        containerEnergia.setLayoutX(20);
-        containerEnergia.setLayoutY(65);
+        containerEnergia.setLayoutX(20); containerEnergia.setLayoutY(65);
         mundoBox.getChildren().add(containerEnergia);
 
         JogoRepository.getJogoAtual().getPlayer().adicionarObservador(this);
         atualizar();
 
+        criarObstaculo(1333.0, 288.5, 266.0, 425.0, mundoBox);
+        criarObstaculo(534.0, 43.5, 154.0, 134.0, mundoBox);
         criarObstaculo(1289.0, 84.5, 174.0, 147.0, mundoBox);
         criarObstaculo(948.0, 259.5, 117.0, 177.0, mundoBox);
         criarObstaculo(1068.0, 234.5, 63.0, 200.0, mundoBox);
-        criarObstaculo(534.0, 43.5, 154.0, 134.0, mundoBox);
         criarObstaculo(572.0, 261.5, 122.0, 159.0, mundoBox);
         criarObstaculo(695.0, 240.5, 56.0, 180.0, mundoBox);
         criarObstaculo(551.0, 461.5, 182.0, 176.0, mundoBox);
@@ -243,9 +264,6 @@ public class CantinaView extends Application implements Observador {
         criarObstaculo(13.0, 249.5, 50.0, 153.0, mundoBox);
         criarObstaculo(14.0, 467.5, 50.0, 164.0, mundoBox);
         criarObstaculo(84.0, 277.5, 89.0, 84.0, mundoBox);
-        criarObstaculo(122.0, 234.5, 27.0, 32.0, mundoBox);
-        criarObstaculo(183.0, 298.5, 27.0, 55.0, mundoBox);
-        criarObstaculo(87.0, 492.5, 90.0, 74.0, mundoBox);
         criarObstaculo(125.0, 451.5, 22.0, 155.0, mundoBox);
         criarObstaculo(187.0, 511.5, 25.0, 58.0, mundoBox);
         criarObstaculo(627.0, 915.5, 87.0, 21.0, mundoBox);
@@ -264,22 +282,12 @@ public class CantinaView extends Application implements Observador {
         criarObstaculo(878.0, 0.5, 205.0, 102.0, mundoBox);
         criarObstaculo(1192.0, 2.5, 405.0, 69.0, mundoBox);
 
-        transicaoCorredor1 = criarTransicao(777.0, 69.5, 91.0, 44.0, mundoBox);
-        transicaoSala = criarTransicao(1090.0, 64.5, 96.0, 47.0, mundoBox);
-
-        double balcaoX = 1333.0;
-        double balcaoY = 288.5;
-        double balcaoW = 266.0;
-        double balcaoH = 425.0;
-
-        Rectangle balcaoHitbox = new Rectangle(balcaoX, balcaoY, balcaoW, balcaoH);
-        balcaoHitbox.setFill(Color.TRANSPARENT);
-        mundoBox.getChildren().add(balcaoHitbox);
-        obstaculos.add(balcaoHitbox);
-
-        blocoVendedor = new Rectangle(balcaoX - 30.0, balcaoY, balcaoW + 30.0, balcaoH);
+        blocoVendedor = new Rectangle(1300.0, 288.5, 35.0, 425.0);
         blocoVendedor.setFill(Color.TRANSPARENT);
         mundoBox.getChildren().add(blocoVendedor);
+
+        transicaoCorredor1 = criarTransicao(777.0, 69.5, 91.0, 44.0, mundoBox);
+        transicaoSala = criarTransicao(1090.0, 64.5, 96.0, 47.0, mundoBox);
 
         inicializarImagensAnimacao();
         playerView = new ImageView(andarFrente[0]);
@@ -288,30 +296,75 @@ public class CantinaView extends Application implements Observador {
 
         inicializarCaixaDialogo(mundoBox, mapW, mapH);
 
+        Pane hud = new Pane();
+        hud.setPickOnBounds(false);
+
+        painelAtributos = new AtributosView();
+        painelAtributos.setPickOnBounds(true);
+        painelAtributos.setVisible(false);
+        painelAtributos.setLayoutX(mapW - 250);
+        painelAtributos.setLayoutY(mapH - 320);
+        painelAtributos.setPrefWidth(220);
+
+        btnStatus = new Button("Status 📊");
+        btnStatus.setPickOnBounds(true);
+        btnStatus.setLayoutX(mapW - 150);
+        btnStatus.setLayoutY(mapH - 80);
+        btnStatus.setFocusTraversable(false);
+
+        btnStatus.setStyle(
+                "-fx-background-color: #2c3e50;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-family: 'Courier New';" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-font-size: 14px;" +
+                        "-fx-border-color: #7f8c8d;" +
+                        "-fx-border-width: 2;" +
+                        "-fx-border-radius: 4;" +
+                        "-fx-background-radius: 4;" +
+                        "-fx-cursor: hand;"
+        );
+
+        btnStatus.setOnAction(e -> {
+            if (!painelAtributos.isVisible()) {
+                painelAtributos.atualizarValores();
+            }
+            painelAtributos.setVisible(!painelAtributos.isVisible());
+        });
+
+        hud.getChildren().addAll(btnStatus, painelAtributos);
+        mundoBox.getChildren().add(hud);
+
         if ("SALA".equals(pontoEntrada)) {
             playerView.setLayoutX(1087.0); playerView.setLayoutY(110.0); ultimaDirecao = Direcao.BAIXO;
         } else {
             playerView.setLayoutX(777.0); playerView.setLayoutY(118.0); ultimaDirecao = Direcao.BAIXO;
         }
 
+        javafx.scene.transform.Scale redimensionamento = new javafx.scene.transform.Scale(1, 1);
+        mundoGroup.getTransforms().setAll(redimensionamento);
+
         Runnable aplicarZoom = () -> {
             double janelaW = root.getWidth();
             double janelaH = root.getHeight();
             if (janelaW <= 0 || janelaH <= 0) return;
             double zoom = Math.min(janelaW / mapW, janelaH / mapH);
-            mundoGroup.setScaleX(zoom);
-            mundoGroup.setScaleY(zoom);
+
+            redimensionamento.setX(zoom);
+            redimensionamento.setY(zoom);
+
+            redimensionamento.setPivotX(mapW / 2.0);
+            redimensionamento.setPivotY(mapH / 2.0);
         };
 
         root.widthProperty().addListener((obs, velho, novo) -> aplicarZoom.run());
         root.heightProperty().addListener((obs, velho, novo) -> aplicarZoom.run());
 
         primaryStage.setScene(scene);
-        if (!primaryStage.isMaximized()) {
-            primaryStage.setWidth(800);
-            primaryStage.setHeight(600);
-        }
-        primaryStage.setMaximized(true);
+
+        primaryStage.setFullScreen(true);
+        primaryStage.setFullScreenExitHint("");
+
         primaryStage.show();
 
         javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.millis(150));
@@ -327,7 +380,7 @@ public class CantinaView extends Application implements Observador {
 
     private Rectangle criarObstaculo(double x, double y, double w, double h, Pane root) {
         Rectangle r = new Rectangle(x, y, w, h);
-        r.setFill(Color.rgb(255, 0, 0, 0.5));
+        r.setFill(Color.TRANSPARENT);
         root.getChildren().add(r);
         obstaculos.add(r);
         return r;
@@ -335,7 +388,7 @@ public class CantinaView extends Application implements Observador {
 
     private Rectangle criarTransicao(double x, double y, double w, double h, Pane root) {
         Rectangle r = new Rectangle(x, y, w, h);
-        r.setFill(Color.rgb(0, 255, 0, 0.5));
+        r.setFill(Color.TRANSPARENT);
         root.getChildren().add(r);
         return r;
     }
@@ -365,20 +418,20 @@ public class CantinaView extends Application implements Observador {
 
     private void inicializarCaixaDialogo(Pane root, double mapW, double mapH) {
         caixaDialogo = new Pane();
-        caixaDialogo.setPrefSize(650, 145);
+        caixaDialogo.setPrefSize(650, 110);
         caixaDialogo.getStyleClass().add("caixa-dialogo");
 
         textoDialogo = new Label();
         textoDialogo.getStyleClass().add("texto-dialogo");
         textoDialogo.setLayoutX(20);
-        textoDialogo.setLayoutY(15);
+        textoDialogo.setLayoutY(20);
         textoDialogo.setWrapText(true);
         textoDialogo.setPrefWidth(610);
 
         caixaDialogo.getChildren().add(textoDialogo);
         caixaDialogo.setVisible(false);
         caixaDialogo.setLayoutX((mapW - 650) / 2.0);
-        caixaDialogo.setLayoutY(mapH - 145 - 25);
+        caixaDialogo.setLayoutY(mapH - 110 - 40);
         root.getChildren().add(caixaDialogo);
     }
 

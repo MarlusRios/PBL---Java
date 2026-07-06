@@ -22,6 +22,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.paint.Color;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.Button;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +43,12 @@ public class ColegiadoView extends Application implements Observador {
     private Label textoBarraEnergia;
     private StackPane containerEnergia;
 
+    private Button btnStatus;
+    private AtributosView painelAtributos;
+
+    private Tutorialoverlay tutorialOverlay;
+    private Rectangle blocoSecretaria;
+
     private Image[] andarFrente;
     private Image[] andarCostas;
     private Image[] andarEsquerda;
@@ -59,16 +66,43 @@ public class ColegiadoView extends Application implements Observador {
     private AnimationTimer gameLoop;
     private Rectangle transicaoLab;
 
-    // Atributo do Padrão Strategy
     private ComportamentoMovimento comportamentoMovimento;
 
     private void loopDoJogo(long tempoAtualNano) {
-        double velocidade = 1.2;
+        double velocidad = 1.2;
         boolean estaSeMovendo = false;
         geralController.MudarTempo();
 
-        // Executa a movimentação delegada pelo padrão Strategy
-        comportamentoMovimento.mover(teclado, playerView, velocidade, obstaculos, playerHitbox);
+        int statusFormatura = geralController.Formatura();
+
+        if (statusFormatura != 0) {
+            gameLoop.stop();
+
+            Pane containerPrincipal = (Pane) playerView.getParent();
+            double larguraDoMapa = 1366.0;
+            double alturaDoMapa = 768.0;
+
+            if (statusFormatura == 1) {
+                PassarVideo.tocar("/formaturaNormal.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, () -> {
+                    geralController.EncerrarJogo();
+                    try {
+                        TelaFimDeJogoView telaFinal = new TelaFimDeJogoView();
+                        telaFinal.start(stage);
+                    } catch (Exception e) { e.printStackTrace(); }
+                });
+            } else if (statusFormatura == 2) {
+                PassarVideo.tocar("/formaturaCachorro.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, () -> {
+                    geralController.EncerrarJogo();
+                    try {
+                        TelaFimDeJogoView telaFinal = new TelaFimDeJogoView();
+                        telaFinal.start(stage);
+                    } catch (Exception e) { e.printStackTrace(); }
+                });
+            }
+            return;
+        }
+
+        comportamentoMovimento.mover(teclado, playerView, velocidad, obstaculos, playerHitbox);
 
         if (teclado.isEsquerda()) { ultimaDirecao = Direcao.ESQUERDA; estaSeMovendo = true; }
         if (teclado.isDireita())  { ultimaDirecao = Direcao.DIREITA;  estaSeMovendo = true; }
@@ -83,8 +117,7 @@ public class ColegiadoView extends Application implements Observador {
 
         if (estaSeMovendo) {
             if (tempoAtualNano - ultimoTempoAnimacao >= intervalo) {
-                frameIndex++;
-                ultimoTempoAnimacao = tempoAtualNano;
+                frameIndex++; ultimoTempoAnimacao = tempoAtualNano;
                 switch (ultimaDirecao) {
                     case BAIXO:    playerView.setImage(andarFrente[frameIndex % andarFrente.length]); break;
                     case CIMA:     playerView.setImage(andarCostas[frameIndex % andarCostas.length]); break;
@@ -101,6 +134,18 @@ public class ColegiadoView extends Application implements Observador {
             }
         }
 
+        if (playerHitbox.getBoundsInParent().intersects(blocoSecretaria.getBoundsInParent())) {
+            if (!emDialogo) {
+                emDialogo = true;
+                comportamentoMovimento = new MovimentoParado();
+                tutorialOverlay.mostrar();
+            }
+        } else {
+            if (emDialogo) {
+                emDialogo = false;
+            }
+        }
+
         if (playerHitbox.getBoundsInParent().intersects(transicaoLab.getBoundsInParent())) {
             gameLoop.stop();
             try {
@@ -112,16 +157,15 @@ public class ColegiadoView extends Application implements Observador {
         boolean statusCiclo = geralController.Atualizador();
 
         if (statusCiclo) {
-            gameLoop.stop(); // Para tudo imediatamente!
+            gameLoop.stop();
 
             Pane containerPrincipal = (Pane) playerView.getParent();
             double larguraDoMapa = 1366.0;
             double alturaDoMapa = 768.0;
 
             caixaDialogo.setVisible(true);
-            textoDialogo.setText("O dia acabou! Luiza está pegando o ônibus de volta para o campus...");
+            textoDialogo.setText("O dia acabou! Luiza está pegando o ônibus de volta para casa...");
 
-            // Toca o vídeo do ônibus e te joga para o Ponto de Ônibus ao terminar
             PassarVideo.tocar("/AnimacaoOnibus.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, () -> {
                 try {
                     PontoDeOnibusView.pontoEntrada = "FIM_DO_DIA";
@@ -131,7 +175,7 @@ public class ColegiadoView extends Application implements Observador {
                     e.printStackTrace();
                 }
             });
-            return; // Corta a execução do frame para evitar bugs visuais
+            return;
         }
         labelRelogio.setText(Relogio.obterTempoFormatado());
     }
@@ -152,11 +196,12 @@ public class ColegiadoView extends Application implements Observador {
         StackPane root = new StackPane(mundoGroup);
         root.setStyle("-fx-background-color: #000000;");
 
+        root.setAlignment(javafx.geometry.Pos.TOP_LEFT);
+
         Scene scene = new Scene(root, 800, 600);
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/Style.css")).toExternalForm());
         teclado = new Movimento(scene);
 
-        // Inicializa o comportamento padrão do Strategy
         comportamentoMovimento = new MovimentoLivre();
 
         ImageView mapa = new ImageView(imagemMapa);
@@ -190,6 +235,10 @@ public class ColegiadoView extends Application implements Observador {
         criarObstaculo(38.0, 630.0, 66.0, 72.0, mundoBox);
         criarObstaculo(935.0, 376.0, 24.0, 230.0, mundoBox);
 
+        blocoSecretaria = new Rectangle(430.0, 393.0, 100.0, 25.0);
+        blocoSecretaria.setFill(Color.TRANSPARENT);
+        mundoBox.getChildren().add(blocoSecretaria);
+
         transicaoLab = criarTransicao(32.0, 368.0, 5.0, 81.0, mundoBox);
 
         inicializarImagensAnimacao();
@@ -199,28 +248,74 @@ public class ColegiadoView extends Application implements Observador {
 
         inicializarCaixaDialogo(mundoBox, mapW, mapH);
 
+        Pane hud = new Pane();
+        hud.setPickOnBounds(false);
+
+        painelAtributos = new AtributosView();
+        painelAtributos.setPickOnBounds(true);
+        painelAtributos.setVisible(false);
+        painelAtributos.setLayoutX(mapW - 250);
+        painelAtributos.setLayoutY(mapH - 320);
+        painelAtributos.setPrefWidth(220);
+
+        btnStatus = new Button("Status 📊");
+        btnStatus.setPickOnBounds(true);
+        btnStatus.setLayoutX(mapW - 150);
+        btnStatus.setLayoutY(mapH - 80);
+        btnStatus.setFocusTraversable(false);
+
+        btnStatus.setStyle(
+                "-fx-background-color: #2c3e50;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-family: 'Courier New';" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-font-size: 14px;" +
+                        "-fx-border-color: #7f8c8d;" +
+                        "-fx-border-width: 2;" +
+                        "-fx-border-radius: 4;" +
+                        "-fx-background-radius: 4;" +
+                        "-fx-cursor: hand;"
+        );
+
+        btnStatus.setOnAction(e -> {
+            if (!painelAtributos.isVisible()) {
+                painelAtributos.atualizarValores();
+            }
+            painelAtributos.setVisible(!painelAtributos.isVisible());
+        });
+
+        hud.getChildren().addAll(btnStatus, painelAtributos);
+        mundoBox.getChildren().add(hud);
+
+        tutorialOverlay = new Tutorialoverlay(() -> {
+            comportamentoMovimento = new MovimentoLivre();
+        });
+        root.getChildren().add(tutorialOverlay);
+
         playerView.setLayoutX(55.0);
         playerView.setLayoutY(355.0);
         ultimaDirecao = Direcao.DIREITA;
+
+        javafx.scene.transform.Scale redimensionamento = new javafx.scene.transform.Scale(1, 1, 0, 0);
+        mundoGroup.getTransforms().setAll(redimensionamento);
 
         Runnable aplicarZoom = () -> {
             double janelaW = root.getWidth();
             double janelaH = root.getHeight();
             if (janelaW <= 0 || janelaH <= 0) return;
             double zoom = Math.min(janelaW / mapW, janelaH / mapH);
-            mundoGroup.setScaleX(zoom);
-            mundoGroup.setScaleY(zoom);
+            redimensionamento.setX(zoom);
+            redimensionamento.setY(zoom);
         };
 
         root.widthProperty().addListener((obs, velho, novo) -> aplicarZoom.run());
         root.heightProperty().addListener((obs, velho, novo) -> aplicarZoom.run());
 
         primaryStage.setScene(scene);
-        if (!primaryStage.isMaximized()) {
-            primaryStage.setWidth(800);
-            primaryStage.setHeight(600);
-        }
-        primaryStage.setMaximized(true);
+
+        primaryStage.setFullScreen(true);
+        primaryStage.setFullScreenExitHint("");
+
         primaryStage.show();
 
         javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.millis(150));
@@ -236,7 +331,7 @@ public class ColegiadoView extends Application implements Observador {
 
     private Rectangle criarObstaculo(double x, double y, double w, double h, Pane root) {
         Rectangle r = new Rectangle(x, y, w, h);
-        r.setFill(Color.rgb(255, 0, 0, 0.5));
+        r.setFill(Color.TRANSPARENT);
         root.getChildren().add(r);
         obstaculos.add(r);
         return r;
@@ -244,7 +339,7 @@ public class ColegiadoView extends Application implements Observador {
 
     private Rectangle criarTransicao(double x, double y, double w, double h, Pane root) {
         Rectangle r = new Rectangle(x, y, w, h);
-        r.setFill(Color.rgb(0, 255, 0, 0.5));
+        r.setFill(Color.TRANSPARENT);
         root.getChildren().add(r);
         return r;
     }

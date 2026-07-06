@@ -1,11 +1,16 @@
 package View;
 
 import Controller.CorredorGatoController;
+import Controller.GeralController;
 import Controller.Relogio;
 import Controller.SalaController;
 import Model.Jogador;
 import Repository.JogoRepository;
+import View.Strategy.ComportamentoMovimento;
+import View.Strategy.MovimentoLivre;
+import View.Strategy.MovimentoParado;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.Group;
@@ -18,16 +23,17 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.paint.Color;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.Button;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class Corredor2View extends Application implements Observador {
-    private final SalaController salaController = new SalaController();
-    private final CorredorGatoController gatoController = new CorredorGatoController();
+    private final CorredorGatoController controller = new CorredorGatoController();
     private final List<Rectangle> obstaculos = new ArrayList<>();
     private final long intervalo = 120_000_000;
+    private final GeralController geralController = new GeralController();
 
     private ImageView playerView;
     private Movimento teclado;
@@ -37,6 +43,12 @@ public class Corredor2View extends Application implements Observador {
     private ProgressBar barraEnergia;
     private Label textoBarraEnergia;
     private StackPane containerEnergia;
+
+    private Button btnStatus;
+    private AtributosView painelAtributos;
+
+    private ImageView gatoView;
+    private Rectangle blocoGato;
 
     private Image[] andarFrente;
     private Image[] andarCostas;
@@ -56,61 +68,51 @@ public class Corredor2View extends Application implements Observador {
     private Rectangle transicaoSala;
     private Rectangle transicaoLab;
 
-    private ImageView gatoView;
-    private Rectangle gatoHitbox;
-    private Rectangle gatoSensor;
-    private int eventoGatoSorteado = -1;
+    private ComportamentoMovimento comportamentoMovimento;
 
     private void loopDoJogo(long tempoAtualNano) {
         double velocidade = 1.2;
         boolean estaSeMovendo = false;
-        double movimentoX = 0;
-        double movimentoY = 0;
+        geralController.MudarTempo();
 
-        if (teclado.isCima())    movimentoY -= velocidade;
-        if (teclado.isBaixo())   movimentoY += velocidade;
-        if (teclado.isEsquerda()) movimentoX -= velocidade;
-        if (teclado.isDireita())  movimentoX += velocidade;
+        int statusFormatura = geralController.Formatura();
 
-        if (movimentoX < 0) ultimaDirecao = Direcao.ESQUERDA;
-        if (movimentoX > 0) ultimaDirecao = Direcao.DIREITA;
-        if (movimentoY < 0) ultimaDirecao = Direcao.CIMA;
-        if (movimentoY > 0) ultimaDirecao = Direcao.BAIXO;
+        if (statusFormatura != 0) {
+            gameLoop.stop();
 
-        if (movimentoX != 0 || movimentoY != 0) estaSeMovendo = true;
+            Pane containerPrincipal = (Pane) playerView.getParent();
+            double larguraDoMapa = 1366.0;
+            double alturaDoMapa = 768.0;
+
+            if (statusFormatura == 1) {
+                PassarVideo.tocar("/formaturaNormal.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, () -> {
+                    geralController.EncerrarJogo();
+                    try {
+                        TelaFimDeJogoView telaFinal = new TelaFimDeJogoView();
+                        telaFinal.start(stage);
+                    } catch (Exception e) { e.printStackTrace(); }
+                });
+            } else if (statusFormatura == 2) {
+                PassarVideo.tocar("/formaturaCachorro.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, () -> {
+                    geralController.EncerrarJogo();
+                    try {
+                        TelaFimDeJogoView telaFinal = new TelaFimDeJogoView();
+                        telaFinal.start(stage);
+                    } catch (Exception e) { e.printStackTrace(); }
+                });
+            }
+            return;
+        }
+
+        comportamentoMovimento.mover(teclado, playerView, velocidade, obstaculos, playerHitbox);
+
+        if (teclado.isEsquerda()) { ultimaDirecao = Direcao.ESQUERDA; estaSeMovendo = true; }
+        if (teclado.isDireita())  { ultimaDirecao = Direcao.DIREITA;  estaSeMovendo = true; }
+        if (teclado.isCima())     { ultimaDirecao = Direcao.CIMA;     estaSeMovendo = true; }
+        if (teclado.isBaixo())    { ultimaDirecao = Direcao.BAIXO;    estaSeMovendo = true; }
 
         double larguraPadrao = andarFrente[0].getWidth();
         double alturaPadrao = andarFrente[0].getHeight();
-
-        double proximoX = playerView.getLayoutX() + movimentoX;
-        playerHitbox.setX(proximoX + (larguraPadrao - playerHitbox.getWidth()) / 2);
-        playerHitbox.setY(playerView.getLayoutY() + (alturaPadrao - playerHitbox.getHeight()));
-
-        boolean colidiuX = false;
-        for (Rectangle obs : obstaculos) {
-            if (playerHitbox.getBoundsInParent().intersects(obs.getBoundsInParent())) {
-                colidiuX = true;
-                break;
-            }
-        }
-        if (!colidiuX && movimentoX != 0) {
-            playerView.setLayoutX(proximoX);
-        }
-
-        double proximoY = playerView.getLayoutY() + movimentoY;
-        playerHitbox.setX(playerView.getLayoutX() + (larguraPadrao - playerHitbox.getWidth()) / 2);
-        playerHitbox.setY(proximoY + (alturaPadrao - playerHitbox.getHeight()));
-
-        boolean colidiuY = false;
-        for (Rectangle obs : obstaculos) {
-            if (playerHitbox.getBoundsInParent().intersects(obs.getBoundsInParent())) {
-                colidiuY = true;
-                break;
-            }
-        }
-        if (!colidiuY && movimentoY != 0) {
-            playerView.setLayoutY(proximoY);
-        }
 
         playerHitbox.setX(playerView.getLayoutX() + (larguraPadrao - playerHitbox.getWidth()) / 2);
         playerHitbox.setY(playerView.getLayoutY() + (alturaPadrao - playerHitbox.getHeight()));
@@ -135,6 +137,27 @@ public class Corredor2View extends Application implements Observador {
                 case ESQUERDA: playerView.setImage(andarEsquerda[0]); break;
             }
         }
+
+        if (playerHitbox.getBoundsInParent().intersects(blocoGato.getBoundsInParent())) {
+            if (!emDialogo) {
+                emDialogo = true;
+                caixaDialogo.setVisible(true);
+                int carinho = controller.carinho();
+                if(carinho == 1){
+                    textoDialogo.setText("Gatinho: Miau! \n\nPerde energia\nGanha motivação");
+                }else if (carinho == 2){
+                    textoDialogo.setText("Luiza: Ouch!!! O gato me mordeu\n\nPerde Saude, Energia e Motivação.");
+                }else if (carinho == 0){
+                    textoDialogo.setText("Energia inuficiente.");
+                }
+            }
+        } else {
+            if (emDialogo) {
+                emDialogo = false;
+                caixaDialogo.setVisible(false);
+            }
+        }
+
         if (playerHitbox.getBoundsInParent().intersects(transicaoSala.getBoundsInParent())) {
             gameLoop.stop();
             try {
@@ -156,36 +179,30 @@ public class Corredor2View extends Application implements Observador {
                 e.printStackTrace();
             }
         }
-        Relogio.incrementarTempo();
-        labelRelogio.setText(Relogio.obterTempoFormatado());
+        boolean statusCiclo = geralController.Atualizador();
 
-        if(playerHitbox.getBoundsInParent().intersects(gatoSensor.getBoundsInParent())) {
-            if (!emDialogo) {
-                emDialogo = true;
-                caixaDialogo.setVisible(true);
+        if (statusCiclo) {
+            gameLoop.stop();
 
-                if (eventoGatoSorteado == -1) {
-                    eventoGatoSorteado = gatoController.carinho();
+            Pane containerPrincipal = (Pane) playerView.getParent();
+            double larguraDoMapa = 1366.0;
+            double alturaDoMapa = 768.0;
 
-                    if (eventoGatoSorteado == 0) {
-                        textoDialogo.setText("Você está cansada demais para fazer carinho nele agora \n\nEnergia insuficiente (mínimo 0.2)");
-                    }
-                    else if (eventoGatoSorteado == 1) {
-                        textoDialogo.setText("Gato: Miau~ (Ronrona) \n\nVocê faz carinho no gatinho. Ele fecha os olhos e começa a ronronar de satisfação! \n\nEnergia -0.2 | Motivação +0.5");
-                    }
-                    else if (eventoGatoSorteado == 2) {
-                        textoDialogo.setText("Gato: MIAU! (Rosna) \n\nVocê tentou fazer carinho no gato, mas ele não gostou e te arranhou.");
-                    }
-                    atualizar();
+            caixaDialogo.setVisible(true);
+            textoDialogo.setText("O dia acabou! Luiza está pegando o ônibus de volta para casa...");
+
+            PassarVideo.tocar("/AnimacaoOnibus.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, () -> {
+                try {
+                    PontoDeOnibusView.pontoEntrada = "FIM_DO_DIA";
+                    PontoDeOnibusView proximoMapa = new PontoDeOnibusView();
+                    proximoMapa.start(stage);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            }
-        } else {
-            if (emDialogo && eventoGatoSorteado != -1) {
-                emDialogo = false;
-                caixaDialogo.setVisible(false);
-                eventoGatoSorteado = -1;
-            }
+            });
+            return;
         }
+        labelRelogio.setText(Relogio.obterTempoFormatado());
     }
 
     @Override
@@ -204,12 +221,22 @@ public class Corredor2View extends Application implements Observador {
         StackPane root = new StackPane(mundoGroup);
         root.setStyle("-fx-background-color: #000000;");
 
+        root.setAlignment(javafx.geometry.Pos.CENTER);
+
         Scene scene = new Scene(root, 800, 600);
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/Style.css")).toExternalForm());
         teclado = new Movimento(scene);
 
+        comportamentoMovimento = new MovimentoLivre();
+
         ImageView mapa = new ImageView(imagemMapa);
         mundoBox.getChildren().add(mapa);
+
+        Image imagemGato = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/gato.gif")));
+        gatoView = new ImageView(imagemGato);
+        gatoView.setLayoutX(1200.0);
+        gatoView.setLayoutY(230.0);
+        mundoBox.getChildren().add(gatoView);
 
         labelRelogio = new Label("07:00");
         labelRelogio.setStyle("-fx-font-size: 24px; -fx-text-fill: white; -fx-background-color: rgba(0, 0, 0, 0.7); -fx-padding: 5px; -fx-background-radius: 5px;");
@@ -231,6 +258,8 @@ public class Corredor2View extends Application implements Observador {
         JogoRepository.getJogoAtual().getPlayer().adicionarObservador(this);
         atualizar();
 
+        criarObstaculo(1205.0, 260.0, 50.0, 35.0, mundoBox);
+
         criarObstaculo(0, 0, 20.0, mapH, mundoBox);
         criarObstaculo(mapW - 20.0, 0, 20.0, mapH, mundoBox);
         criarObstaculo(0, 0, mapW, 50.0, mundoBox);
@@ -245,37 +274,17 @@ public class Corredor2View extends Application implements Observador {
         criarObstaculo(852.0, 634.0, 90.0, 192.0, mundoBox);
         criarObstaculo(1310.0, 606.0, 133.0, 213.0, mundoBox);
         criarObstaculo(550.0, 156.0, 156.0, 23.0, mundoBox);
-        criarObstaculo(22.0, 278.0, 52.0, 82.0, mundoBox);
+        criarObstaculo(22.0, 277.0, 52.0, 82.0, mundoBox);
         criarObstaculo(23.0, 523.0, 51.0, 94.0, mundoBox);
         criarObstaculo(1660.0, 277.0, 72.0, 102.0, mundoBox);
         criarObstaculo(1659.0, 512.0, 72.0, 109.0, mundoBox);
 
+        blocoGato = new Rectangle(1185.0, 220.0, 90.0, 85.0);
+        blocoGato.setFill(Color.TRANSPARENT);
+        mundoBox.getChildren().add(blocoGato);
+
         transicaoSala = criarTransicao(39.0, 366.0, 28.0, 148.0, mundoBox);
         transicaoLab = criarTransicao(1668.0, 383.0, 17.0, 120.0, mundoBox);
-
-        Image imgGato = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/gato.gif")));
-        gatoView = new ImageView(imgGato);
-        gatoView.setFitWidth(imgGato.getWidth() * 3.2);
-        gatoView.setPreserveRatio(true);
-        gatoView.setLayoutX(410.0);
-        gatoView.setLayoutY(230.0);
-
-        double gatoW = imgGato.getWidth() * 3.2;
-        double gatoH = imgGato.getHeight() * 3.2;
-
-        double gHitboxW = gatoW * 0.6;
-        double gHitboxH = gatoH * 0.4;
-        double gHitboxX = 410.0 + (gatoW - gHitboxW) / 2;
-        double gHitboxY = 230.0 + (gatoH - gHitboxH);
-
-        gatoHitbox = new Rectangle(gHitboxX, gHitboxY, gHitboxW, gHitboxH);
-        gatoHitbox.setFill(Color.TRANSPARENT);
-
-        gatoSensor = new Rectangle(gHitboxX - 20, gHitboxY - 20, gHitboxW + 40, gHitboxH + 40);
-        gatoSensor.setFill(Color.TRANSPARENT);
-
-        mundoBox.getChildren().addAll(gatoView, gatoHitbox, gatoSensor);
-        obstaculos.add(gatoHitbox);
 
         inicializarImagensAnimacao();
         playerView = new ImageView(andarFrente[0]);
@@ -284,30 +293,75 @@ public class Corredor2View extends Application implements Observador {
 
         inicializarCaixaDialogo(mundoBox, mapW, mapH);
 
+        Pane hud = new Pane();
+        hud.setPickOnBounds(false);
+
+        painelAtributos = new AtributosView();
+        painelAtributos.setPickOnBounds(true);
+        painelAtributos.setVisible(false);
+        painelAtributos.setLayoutX(mapW - 250);
+        painelAtributos.setLayoutY(mapH - 320);
+        painelAtributos.setPrefWidth(220);
+
+        btnStatus = new Button("Status 📊");
+        btnStatus.setPickOnBounds(true);
+        btnStatus.setLayoutX(mapW - 150);
+        btnStatus.setLayoutY(mapH - 80);
+        btnStatus.setFocusTraversable(false);
+
+        btnStatus.setStyle(
+                "-fx-background-color: #2c3e50;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-family: 'Courier New';" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-font-size: 14px;" +
+                        "-fx-border-color: #7f8c8d;" +
+                        "-fx-border-width: 2;" +
+                        "-fx-border-radius: 4;" +
+                        "-fx-background-radius: 4;" +
+                        "-fx-cursor: hand;"
+        );
+
+        btnStatus.setOnAction(e -> {
+            if (!painelAtributos.isVisible()) {
+                painelAtributos.atualizarValores();
+            }
+            painelAtributos.setVisible(!painelAtributos.isVisible());
+        });
+
+        hud.getChildren().addAll(btnStatus, painelAtributos);
+        mundoBox.getChildren().add(hud);
+
         if ("LABORATORIO".equals(pontoEntrada)) {
             playerView.setLayoutX(1550.0); playerView.setLayoutY(400.0); ultimaDirecao = Direcao.ESQUERDA;
         } else {
             playerView.setLayoutX(85.0); playerView.setLayoutY(400.0); ultimaDirecao = Direcao.DIREITA;
         }
 
+        javafx.scene.transform.Scale redimensionamento = new javafx.scene.transform.Scale(1, 1);
+        mundoGroup.getTransforms().setAll(redimensionamento);
+
         Runnable aplicarZoom = () -> {
             double janelaW = root.getWidth();
             double janelaH = root.getHeight();
             if (janelaW <= 0 || janelaH <= 0) return;
             double zoom = Math.min(janelaW / mapW, janelaH / mapH);
-            mundoGroup.setScaleX(zoom);
-            mundoGroup.setScaleY(zoom);
+
+            redimensionamento.setX(zoom);
+            redimensionamento.setY(zoom);
+
+            redimensionamento.setPivotX(mapW / 2.0);
+            redimensionamento.setPivotY(mapH / 2.0);
         };
 
         root.widthProperty().addListener((obs, velho, novo) -> aplicarZoom.run());
         root.heightProperty().addListener((obs, velho, novo) -> aplicarZoom.run());
 
         primaryStage.setScene(scene);
-        if (!primaryStage.isMaximized()) {
-            primaryStage.setWidth(800);
-            primaryStage.setHeight(600);
-        }
-        primaryStage.setMaximized(true);
+
+        primaryStage.setFullScreen(true);
+        primaryStage.setFullScreenExitHint("");
+
         primaryStage.show();
 
         javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.millis(150));
@@ -323,7 +377,7 @@ public class Corredor2View extends Application implements Observador {
 
     private Rectangle criarObstaculo(double x, double y, double w, double h, Pane root) {
         Rectangle r = new Rectangle(x, y, w, h);
-        r.setFill(Color.rgb(255, 0, 0, 0.5));
+        r.setFill(Color.TRANSPARENT);
         root.getChildren().add(r);
         obstaculos.add(r);
         return r;
@@ -331,7 +385,7 @@ public class Corredor2View extends Application implements Observador {
 
     private Rectangle criarTransicao(double x, double y, double w, double h, Pane root) {
         Rectangle r = new Rectangle(x, y, w, h);
-        r.setFill(Color.rgb(0, 255, 0, 0.5));
+        r.setFill(Color.TRANSPARENT);
         root.getChildren().add(r);
         return r;
     }
@@ -361,20 +415,20 @@ public class Corredor2View extends Application implements Observador {
 
     private void inicializarCaixaDialogo(Pane root, double mapW, double mapH) {
         caixaDialogo = new Pane();
-        caixaDialogo.setPrefSize(650, 145);
+        caixaDialogo.setPrefSize(650, 110);
         caixaDialogo.getStyleClass().add("caixa-dialogo");
 
         textoDialogo = new Label();
         textoDialogo.getStyleClass().add("texto-dialogo");
         textoDialogo.setLayoutX(20);
-        textoDialogo.setLayoutY(15);
+        textoDialogo.setLayoutY(20);
         textoDialogo.setWrapText(true);
         textoDialogo.setPrefWidth(610);
 
         caixaDialogo.getChildren().add(textoDialogo);
         caixaDialogo.setVisible(false);
         caixaDialogo.setLayoutX((mapW - 650) / 2.0);
-        caixaDialogo.setLayoutY(mapH - 145 - 25);
+        caixaDialogo.setLayoutY(mapH - 110 - 40);
         root.getChildren().add(caixaDialogo);
     }
 

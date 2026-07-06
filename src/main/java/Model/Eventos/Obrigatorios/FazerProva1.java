@@ -18,7 +18,7 @@ public class FazerProva1 extends Obrigatorio {
             milagre.aplicarEvento(jogador);
         }
         jogador.setDesempenho(jogador.getConhecimento()/10);
-        jogador.setConhecimento(Math.min(100, jogador.getConhecimento()));
+        jogador.setConhecimento(Math.min(10, jogador.getConhecimento()));
         return false;
     }
 }

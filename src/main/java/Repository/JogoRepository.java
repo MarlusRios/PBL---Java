@@ -71,6 +71,7 @@ public class JogoRepository {
     }
 
     public String proximoId() {
+        inicializar();
         return String.valueOf(jogos.size() + 1);
     }
 }

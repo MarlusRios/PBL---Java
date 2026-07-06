@@ -10,7 +10,7 @@ public class Relogio {
         if (frames >= 60) { // Aproximadamente 1 segundo
             segundosTotais++;
             frames = 0;
-            tickRate = 3;
+            tickRate = 0.5;
         }
     }
 

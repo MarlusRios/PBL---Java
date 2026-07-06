@@ -3,6 +3,7 @@ package Service;
 import Controller.Relogio;
 import Model.Jogo;
 import Model.Jogador;
+import Repository.JogoRepository;
 
 public class JogoService {
 
@@ -24,7 +25,6 @@ public class JogoService {
         }
     }
 
-    // CORREÇÃO: Ajustada a perda passiva para rodar apenas 1 vez por segundo real (quando frames zeram)
     // Se rodar solto a cada frame (60x por segundo), a energia zera em menos de 2 minutos de jogo.
     public void atualizarJogo(Jogo jogo, JogadorService jogadorService) {
         if (Relogio.frames == 0) {
@@ -52,11 +52,12 @@ public class JogoService {
             semanaAtual = semanaAtual + 1;
             jogo.setSemana(semanaAtual);
         }
-        // Toda a lógica antiga do jogo.setExamTime(...) sumiu daqui!
     }
 
     public void fimDoDia(Jogador jogador) {
-        jogador.setEnergia(100);
+        jogador.setEnergia(100.0);
+        jogador.setMotivacao(100.0);
+        jogador.setSaude(100);
     }
 
     public void avancarSemestre(Jogo jogo) {
@@ -87,29 +88,23 @@ public class JogoService {
         jogador.setDinheiro(jogador.getDinheiro() + 300);
     }
 
-    public double obterHoraAtualComoDouble() {
-        long totalMinutosNoJogo = (long) ((8 * 60) + (Relogio.segundosTotais * Relogio.tickRate));
-        long horas = (totalMinutosNoJogo / 60) % 24;
-        long minutos = totalMinutosNoJogo % 60;
-        return horas + (minutos / 60.0);
-    }
-
     public boolean verificarFimDoDia() {
+        Jogador jogador = JogoRepository.getJogoAtual().getPlayer();
         String horaFormatada = Controller.Relogio.obterTempoFormatado();
-        int horaAtual = Integer.parseInt(horaFormatada.split(":")[0]);
-        return horaAtual >= 19;
+        int horaAtual = Integer.parseInt(horaFormatada.split(":")[0]);//pega so a hora, sem os minutos
+        return horaAtual >= 19 || jogador.getMotivacao()<= 0 || jogador.getSaude()<= 0;
     }
 
     public int verificarFormatura(Jogo jogo) {
         if( jogo.getPlayer().getAndamento() > 5){
             return 1;
         }else if (jogo.getSemestre()>8){
-            return 0;
+            return 2;
         }
-        return -1;
+        return 0;
     }
 
-    private void encerrarJogo(Jogo jogo) {
+    public void encerrarJogo(Jogo jogo) {
         jogo.setSemestre(6);
     }
 

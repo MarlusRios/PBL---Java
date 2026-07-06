@@ -1,6 +1,7 @@
 package View;
 
 import Controller.GeralController;
+import Controller.LabController;
 import Controller.Relogio;
 import Controller.SalaController;
 import Model.Jogador;
@@ -22,13 +23,14 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.paint.Color;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.Button;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class LaboratorioView extends Application implements Observador {
-    private final SalaController salaController = new SalaController();
+    private final LabController labController = new LabController();
     private final List<Rectangle> obstaculos = new ArrayList<>();
     private final long intervalo = 120_000_000;
     private final GeralController geralController = new GeralController();
@@ -41,6 +43,11 @@ public class LaboratorioView extends Application implements Observador {
     private ProgressBar barraEnergia;
     private Label textoBarraEnergia;
     private StackPane containerEnergia;
+
+    private Button btnStatus;
+    private AtributosView painelAtributos;
+
+    private Rectangle blocoNpc;
 
     private Image[] andarFrente;
     private Image[] andarCostas;
@@ -60,7 +67,6 @@ public class LaboratorioView extends Application implements Observador {
     private Rectangle transicaoCorredor2;
     private Rectangle transicaoColegiado;
 
-    // Atributo do Padrão Strategy
     private ComportamentoMovimento comportamentoMovimento;
 
     private void loopDoJogo(long tempoAtualNano) {
@@ -68,7 +74,35 @@ public class LaboratorioView extends Application implements Observador {
         boolean estaSeMovendo = false;
         geralController.MudarTempo();
 
-        // Executa a movimentação delegada pelo padrão Strategy
+        int statusFormatura = geralController.Formatura();
+
+        if (statusFormatura != 0) {
+            gameLoop.stop();
+
+            Pane containerPrincipal = (Pane) playerView.getParent();
+            double larguraDoMapa = 1366.0;
+            double alturaDoMapa = 768.0;
+
+            if (statusFormatura == 1) {
+                PassarVideo.tocar("/formaturaNormal.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, () -> {
+                    geralController.EncerrarJogo();
+                    try {
+                        TelaFimDeJogoView telaFinal = new TelaFimDeJogoView();
+                        telaFinal.start(stage);
+                    } catch (Exception e) { e.printStackTrace(); }
+                });
+            } else if (statusFormatura == 2) {
+                PassarVideo.tocar("/formaturaCachorro.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, () -> {
+                    geralController.EncerrarJogo();
+                    try {
+                        TelaFimDeJogoView telaFinal = new TelaFimDeJogoView();
+                        telaFinal.start(stage);
+                    } catch (Exception e) { e.printStackTrace(); }
+                });
+            }
+            return;
+        }
+
         comportamentoMovimento.mover(teclado, playerView, velocidad, obstaculos, playerHitbox);
 
         if (teclado.isEsquerda()) { ultimaDirecao = Direcao.ESQUERDA; estaSeMovendo = true; }
@@ -84,8 +118,7 @@ public class LaboratorioView extends Application implements Observador {
 
         if (estaSeMovendo) {
             if (tempoAtualNano - ultimoTempoAnimacao >= intervalo) {
-                frameIndex++;
-                ultimoTempoAnimacao = tempoAtualNano;
+                frameIndex++; ultimoTempoAnimacao = tempoAtualNano;
                 switch (ultimaDirecao) {
                     case BAIXO:    playerView.setImage(andarFrente[frameIndex % andarFrente.length]); break;
                     case CIMA:     playerView.setImage(andarCostas[frameIndex % andarCostas.length]); break;
@@ -99,6 +132,26 @@ public class LaboratorioView extends Application implements Observador {
                 case CIMA:     playerView.setImage(andarCostas[0]); break;
                 case DIREITA:  playerView.setImage(andarDireita[0]); break;
                 case ESQUERDA: playerView.setImage(andarEsquerda[0]); break;
+            }
+        }
+
+        if (playerHitbox.getBoundsInParent().intersects(blocoNpc.getBoundsInParent())) {
+            if (!emDialogo) {
+                emDialogo = true;
+                caixaDialogo.setVisible(true);
+                int chat = labController.baterPapo();
+                if(chat == 1){
+                    textoDialogo.setText("aluno: Olá! Como vai o andamento do semestre?\n\nPerde energia\nGanha conhecimnento e motivação");
+                }else if(chat == 2){
+                    textoDialogo.setText("Luiza: você é muito inteligente, obrigado pela dica!!\n\nGanha mais conhecimento e motivação\nPerde energia");
+                }else if(chat == 0){
+                    textoDialogo.setText("Energia insuficiente.");
+                }
+            }
+        } else {
+            if (emDialogo) {
+                emDialogo = false;
+                caixaDialogo.setVisible(false);
             }
         }
 
@@ -120,16 +173,15 @@ public class LaboratorioView extends Application implements Observador {
         boolean statusCiclo = geralController.Atualizador();
 
         if (statusCiclo) {
-            gameLoop.stop(); // Para tudo imediatamente!
+            gameLoop.stop();
 
             Pane containerPrincipal = (Pane) playerView.getParent();
             double larguraDoMapa = 1366.0;
             double alturaDoMapa = 768.0;
 
             caixaDialogo.setVisible(true);
-            textoDialogo.setText("O dia acabou! Luiza está pegando o ônibus de volta para o campus...");
+            textoDialogo.setText("O dia acabou! Luiza está pegando o ônibus de volta para casa...");
 
-            // Toca o vídeo do ônibus e te joga para o Ponto de Ônibus ao terminar
             PassarVideo.tocar("/AnimacaoOnibus.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, () -> {
                 try {
                     PontoDeOnibusView.pontoEntrada = "FIM_DO_DIA";
@@ -139,7 +191,7 @@ public class LaboratorioView extends Application implements Observador {
                     e.printStackTrace();
                 }
             });
-            return; // Corta a execução do frame para evitar bugs visuais
+            return;
         }
         labelRelogio.setText(Relogio.obterTempoFormatado());
     }
@@ -160,11 +212,12 @@ public class LaboratorioView extends Application implements Observador {
         StackPane root = new StackPane(mundoGroup);
         root.setStyle("-fx-background-color: #000000;");
 
+        root.setAlignment(javafx.geometry.Pos.CENTER);
+
         Scene scene = new Scene(root, 800, 600);
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/Style.css")).toExternalForm());
         teclado = new Movimento(scene);
 
-        // Inicializa o comportamento padrão do Strategy
         comportamentoMovimento = new MovimentoLivre();
 
         ImageView mapa = new ImageView(imagemMapa);
@@ -190,6 +243,8 @@ public class LaboratorioView extends Application implements Observador {
         JogoRepository.getJogoAtual().getPlayer().adicionarObservador(this);
         atualizar();
 
+        criarObstaculo(693.0, 300.0, 73.0, 103.0, mundoBox);
+
         criarObstaculo(131.0, 169.0, 159.0, 124.0, mundoBox);
         criarObstaculo(371.0, 167.0, 190.0, 131.0, mundoBox);
         criarObstaculo(621.0, 180.0, 223.0, 87.0, mundoBox);
@@ -208,6 +263,10 @@ public class LaboratorioView extends Application implements Observador {
         criarObstaculo(68.0, 75.0, 970.0, 166.0, mundoBox);
         criarObstaculo(1047.0, 75.0, 367.0, 248.0, mundoBox);
 
+        blocoNpc = new Rectangle(670.0, 403.0, 120.0, 42.0);
+        blocoNpc.setFill(Color.TRANSPARENT);
+        mundoBox.getChildren().add(blocoNpc);
+
         transicaoCorredor2 = criarTransicao(34.0, 501.0, 34.0, 100.0, mundoBox);
         transicaoColegiado = criarTransicao(1408.0, 494.0, 31.0, 97.0, mundoBox);
 
@@ -218,30 +277,75 @@ public class LaboratorioView extends Application implements Observador {
 
         inicializarCaixaDialogo(mundoBox, mapW, mapH);
 
+        Pane hud = new Pane();
+        hud.setPickOnBounds(false);
+
+        painelAtributos = new AtributosView();
+        painelAtributos.setPickOnBounds(true);
+        painelAtributos.setVisible(false);
+        painelAtributos.setLayoutX(mapW - 250);
+        painelAtributos.setLayoutY(mapH - 320);
+        painelAtributos.setPrefWidth(220);
+
+        btnStatus = new Button("Status 📊");
+        btnStatus.setPickOnBounds(true);
+        btnStatus.setLayoutX(mapW - 150);
+        btnStatus.setLayoutY(mapH - 80);
+        btnStatus.setFocusTraversable(false);
+
+        btnStatus.setStyle(
+                "-fx-background-color: #2c3e50;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-family: 'Courier New';" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-font-size: 14px;" +
+                        "-fx-border-color: #7f8c8d;" +
+                        "-fx-border-width: 2;" +
+                        "-fx-border-radius: 4;" +
+                        "-fx-background-radius: 4;" +
+                        "-fx-cursor: hand;"
+        );
+
+        btnStatus.setOnAction(e -> {
+            if (!painelAtributos.isVisible()) {
+                painelAtributos.atualizarValores();
+            }
+            painelAtributos.setVisible(!painelAtributos.isVisible());
+        });
+
+        hud.getChildren().addAll(btnStatus, painelAtributos);
+        mundoBox.getChildren().add(hud);
+
         if ("COLEGIADO".equals(pontoEntrada)) {
             playerView.setLayoutX(1300.0); playerView.setLayoutY(494); ultimaDirecao = Direcao.ESQUERDA;
         } else {
             playerView.setLayoutX(90.0); playerView.setLayoutY(494.0); ultimaDirecao = Direcao.DIREITA;
         }
 
+        javafx.scene.transform.Scale redimensionamento = new javafx.scene.transform.Scale(1, 1);
+        mundoGroup.getTransforms().setAll(redimensionamento);
+
         Runnable aplicarZoom = () -> {
             double janelaW = root.getWidth();
-            double janelaH = root.getHeight();
-            if (janelaW <= 0 || janelaH <= 0) return;
-            double zoom = Math.min(janelaW / mapW, janelaH / mapH);
-            mundoGroup.setScaleX(zoom);
-            mundoGroup.setScaleY(zoom);
+            double javaH = root.getHeight();
+            if (janelaW <= 0 || javaH <= 0) return;
+            double zoom = Math.min(janelaW / mapW, javaH / mapH);
+
+            redimensionamento.setX(zoom);
+            redimensionamento.setY(zoom);
+
+            redimensionamento.setPivotX(mapW / 2.0);
+            redimensionamento.setPivotY(mapH / 2.0);
         };
 
         root.widthProperty().addListener((obs, velho, novo) -> aplicarZoom.run());
         root.heightProperty().addListener((obs, velho, novo) -> aplicarZoom.run());
 
         primaryStage.setScene(scene);
-        if (!primaryStage.isMaximized()) {
-            primaryStage.setWidth(800);
-            primaryStage.setHeight(600);
-        }
-        primaryStage.setMaximized(true);
+
+        primaryStage.setFullScreen(true);
+        primaryStage.setFullScreenExitHint("");
+
         primaryStage.show();
 
         javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.millis(150));
@@ -257,7 +361,7 @@ public class LaboratorioView extends Application implements Observador {
 
     private Rectangle criarObstaculo(double x, double y, double w, double h, Pane root) {
         Rectangle r = new Rectangle(x, y, w, h);
-        r.setFill(Color.rgb(255, 0, 0, 0.5));
+        r.setFill(Color.TRANSPARENT);
         root.getChildren().add(r);
         obstaculos.add(r);
         return r;
@@ -265,7 +369,7 @@ public class LaboratorioView extends Application implements Observador {
 
     private Rectangle criarTransicao(double x, double y, double w, double h, Pane root) {
         Rectangle r = new Rectangle(x, y, w, h);
-        r.setFill(Color.rgb(0, 255, 0, 0.5));
+        r.setFill(Color.TRANSPARENT);
         root.getChildren().add(r);
         return r;
     }

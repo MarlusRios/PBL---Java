@@ -13,6 +13,6 @@ public class Aprender extends Aleatorio {
     public void aplicarEvento(Jogador jogador){
         jogador.setConhecimento(jogador.getConhecimento()+ 10);
         jogador.setMotivacao(jogador.getMotivacao() + 20.0);
-        jogador.setEnergia(jogador.getEnergia() - 4.0);
+        jogador.setEnergia(jogador.getEnergia() - 15.0);
     }
 }

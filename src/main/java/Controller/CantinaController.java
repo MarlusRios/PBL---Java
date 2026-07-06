@@ -2,18 +2,19 @@ package Controller;
 
 import Model.Jogador;
 import Model.Jogo;
+import Model.Personagens.Gato;
 import Model.Personagens.VendedorCantina;
 import Repository.JogoRepository;
+import Service.JogadorService;
+import Service.JogoService;
 
 public class CantinaController {
+    private final JogadorService jogadorService = new JogadorService();
+    private final JogoService jogoService = new JogoService();
 
-    public int comprarLanche() {
+    public int comprar(){
         Jogo jogo = JogoRepository.getJogoAtual();
-        if (jogo == null) return 0;
-
         Jogador jogador = jogo.getPlayer();
-
-        VendedorCantina vendedor = new VendedorCantina();
-        return vendedor.interacaoInt(jogador, jogo);
+        return jogadorService.interagirInt(jogador, new VendedorCantina());
     }
 }

@@ -14,7 +14,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.Pane;
-import Repository.JogoRepository;
 
 import Controller.JogoController;
 import Model.Jogo;
@@ -44,7 +43,6 @@ public class JanelaInicial extends Application {
             title.setStyle("-fx-font-size: 48px; -fx-font-weight: bold;");
         }
 
-        // Criamos a cena principal logo no início para usá-la com segurança nos lambdas
         Scene scene = new Scene(root, 800, 450);
 
         Image imagemBotao = new Image(getClass().getResourceAsStream("/botao.png"));
@@ -88,16 +86,13 @@ public class JanelaInicial extends Application {
                     Jogo novoJogo = jogoController.novaPartida(nomeSave);
                     System.out.println("Save gerado. ID: " + novoJogo.getId());
 
-                    // --- TRANSIÇÃO DIRETAMENTE PARA O PONTO DE ÔNIBUS (NOVO JOGO) ---
                     try {
-                        // 1. Avisa o Ponto de Ônibus que é um jogo novinho do zero
                         PontoDeOnibusView.pontoEntrada = "NOVO_JOGO";
-
-                        // 2. Instancia a View do Ponto de Ônibus
                         PontoDeOnibusView pontoDeOnibus = new PontoDeOnibusView();
-
-                        // 3. Passa o controle do Stage atual para iniciar o mapa e o game loop
                         pontoDeOnibus.start(primaryStage);
+
+                        // --- CONFIGURAÇÃO DE TELA CHEIA REAL (NOVO JOGO) ---
+                        configurarTelaCheiaReal(primaryStage);
 
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -165,12 +160,14 @@ public class JanelaInicial extends Application {
                         Jogo jogoCarregado = jogoController.carregarPartida(idPartida);
                         System.out.println("Partida carregada! ID: " + jogoCarregado.getId());
 
-                        // --- TRANSIÇÃO PARA A SALA VIA LOADING OU DIRETA ---
                         try {
-                            SalaView sala = new SalaView();
-                            primaryStage.setWidth(1024);
-                            primaryStage.setHeight(768);
-                            sala.start(primaryStage);
+                            PontoDeOnibusView.pontoEntrada = "FIM_DO_DIA";
+                            PontoDeOnibusView pontoDeOnibus = new PontoDeOnibusView();
+                            pontoDeOnibus.start(primaryStage);
+
+                            // --- CONFIGURAÇÃO DE TELA CHEIA REAL (JOGO CARREGADO) ---
+                            configurarTelaCheiaReal(primaryStage);
+
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -198,19 +195,18 @@ public class JanelaInicial extends Application {
             btnVoltar.setTranslateX(20);
             btnVoltar.setTranslateY(20);
 
-            // CORREÇÃO: Usa a variável 'scene' direta
             btnVoltar.setOnAction(eventVoltar -> scene.setRoot(root));
 
             telaCarregarRoot.getChildren().addAll(conteudoCentro, btnVoltar);
             scene.setRoot(telaCarregarRoot);
         });
 
-        VBox caixaBotoes = new VBox();
-        caixaBotoes.setAlignment(Pos.CENTER);
-        caixaBotoes.setSpacing(1);
-        caixaBotoes.getChildren().addAll(btnNovoJogo, btnCarregarJogo);
+        VBox cajaBotoes = new VBox();
+        cajaBotoes.setAlignment(Pos.CENTER);
+        cajaBotoes.setSpacing(1);
+        cajaBotoes.getChildren().addAll(btnNovoJogo, btnCarregarJogo);
 
-        root.getChildren().addAll(title, caixaBotoes);
+        root.getChildren().addAll(title, cajaBotoes);
 
         ImageView viewCarregar = new ImageView(imagemBotao);
         viewCarregar.setFitWidth(360);
@@ -224,5 +220,15 @@ public class JanelaInicial extends Application {
 
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+    // Método auxiliar para gerenciar as propriedades de dimensionamento nativo
+    private void configurarTelaCheiaReal(Stage stage) {
+        // Opção A: TELA CHEIA DO JOGO (Padrão Gamer - Ocupa tudo nativamente)
+        stage.setFullScreen(true);
+
+        // Impede que o JavaFX saia do modo tela cheia se você clicar fora ou abrir outro monitor
+        stage.setFullScreenExitHint("");
+
     }
 }

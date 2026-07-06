@@ -11,6 +11,7 @@ import View.Strategy.MovimentoParado;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.Button;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.Group;
@@ -43,6 +44,9 @@ public class SalaView extends Application implements Observador {
     private Label textoBarraEnergia;
     private StackPane containerEnergia;
 
+    private Button btnStatus;
+    private AtributosView painelAtributos;
+
     private Image[] andarFrente;
     private Image[] andarCostas;
     private Image[] andarEsquerda;
@@ -61,7 +65,6 @@ public class SalaView extends Application implements Observador {
     private Rectangle transicaoCantina;
     private Rectangle transicaoCorredor2;
 
-    // Atributo do Padrão Strategy
     private ComportamentoMovimento comportamentoMovimento;
 
     private void loopDoJogo(long tempoAtualNano) {
@@ -69,10 +72,37 @@ public class SalaView extends Application implements Observador {
         boolean estaSeMovendo = false;
         geralController.MudarTempo();
 
-        // 1. Delega a movimentação para a estratégia ativa (Strategy)
+        int statusFormatura = geralController.Formatura();
+
+        if (statusFormatura != 0) {
+            gameLoop.stop();
+
+            Pane containerPrincipal = (Pane) playerView.getParent();
+            double larguraDoMapa = 1366.0;
+            double alturaDoMapa = 768.0;
+
+            if (statusFormatura == 1) {
+                PassarVideo.tocar("/formaturaNormal.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, () -> {
+                    geralController.EncerrarJogo();
+                    try {
+                        TelaFimDeJogoView telaFinal = new TelaFimDeJogoView();
+                        telaFinal.start(stage);
+                    } catch (Exception e) { e.printStackTrace(); }
+                });
+            } else if (statusFormatura == 2) {
+                PassarVideo.tocar("/formaturaCachorro.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, () -> {
+                    geralController.EncerrarJogo();
+                    try {
+                        TelaFimDeJogoView telaFinal = new TelaFimDeJogoView();
+                        telaFinal.start(stage);
+                    } catch (Exception e) { e.printStackTrace(); }
+                });
+            }
+            return;
+        }
+
         comportamentoMovimento.mover(teclado, playerView, velocidade, obstaculos, playerHitbox);
 
-        // 2. Atualiza a direção da animação baseada no teclado
         if (teclado.isEsquerda()) { ultimaDirecao = Direcao.ESQUERDA; estaSeMovendo = true; }
         if (teclado.isDireita())  { ultimaDirecao = Direcao.DIREITA;  estaSeMovendo = true; }
         if (teclado.isCima())     { ultimaDirecao = Direcao.CIMA;     estaSeMovendo = true; }
@@ -81,18 +111,14 @@ public class SalaView extends Application implements Observador {
         double larguraPadrao = andarFrente[0].getWidth();
         double alturaPadrao = andarFrente[0].getHeight();
 
-        // Sincroniza a hitbox com a posição atual após o movimento
         playerHitbox.setX(playerView.getLayoutX() + (larguraPadrao - playerHitbox.getWidth()) / 2);
         playerHitbox.setY(playerView.getLayoutY() + (alturaPadrao - playerHitbox.getHeight()));
 
-        // 3. Interação com o Professor (Com trava de repetição automática)
         if (playerHitbox.getBoundsInParent().intersects(blocoProfessor.getBoundsInParent())) {
-            // SÓ fala com o professor se a caixa de diálogo NÃO estiver ativa na tela
             if (!emDialogo) {
                 int chat = salaController.conversar();
                 emDialogo = true;
                 caixaDialogo.setVisible(true);
-                //necessarias para passar o video
                 Pane containerPrincipal = (Pane) playerView.getParent();
                 double larguraDoMapa = 1366.0;
                 double alturaDoMapa = 768.0;
@@ -102,41 +128,29 @@ public class SalaView extends Application implements Observador {
                 } else if (chat == 2) {
                     textoDialogo.setText("Professor: Luiza, voce é muito burra e vai repetir a materia! \n\nEnergia -10\nMotivação -20");
                 } else if (chat == 3) {
-                    textoDialogo.setText("Professor: Bom dia luiza, prota pra aula? \n\nO tempo passou\nconhecimento +25\nenergia -30");
+                    textoDialogo.setText("Professor: Bom dia luiza, prota pra aula? \nO tempo passou\nconhecimento +25\nenergia -30");
                 } else if (chat == 0) {
                     textoDialogo.setText("Energia insuficiente");
                 } else {
                     textoDialogo.setText("Professor: Bom luiza, prova iniciada...");
-
-// 1. Pausa o movimento mudando a estratégia para ela não andar durante o vídeo
                     comportamentoMovimento = new MovimentoParado();
 
-                    // 2. Chama o vídeo
                     PassarVideo.tocar("/FazendoProva.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, () -> {
-
-                        // ADAPTAÇÃO: Altera o cálculo para ir direto para as 19:00 (Fim do dia)
-                        // 660 minutos totais a partir das 08:00 do início do dia
                         Controller.Relogio.segundosTotais = (long) (660 / Relogio.tickRate);
 
-                        // 3. Depois que o tempo mudou, o jogo checa se passou ou perdeu
                         if (salaController.passou()) {
                             textoDialogo.setText("Professor: Bom luiza, prova concluida, parabens!!");
                             PassarVideo.tocar("/Passando.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, null);
-
-                            // ADAPTAÇÃO: Restaura o movimento mantendo o 'null' que seu método exige
                             comportamentoMovimento = new MovimentoLivre();
                         } else {
                             textoDialogo.setText("Professor: Bom luiza, prova concluida, que pena que voce perdeu...");
                             PassarVideo.tocar("/Perdendo.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, null);
-
-                            // ADAPTAÇÃO: Faz o mesmo aqui caso ela perca
                             comportamentoMovimento = new MovimentoLivre();
                         }
                     });
                 }
             }
         } else {
-            //dialogo sai se o jogador sair de perto
             if (emDialogo) {
                 emDialogo = false;
                 caixaDialogo.setVisible(false);
@@ -144,7 +158,6 @@ public class SalaView extends Application implements Observador {
             }
         }
 
-        //Animação do Sprite
         if (estaSeMovendo) {
             if (tempoAtualNano - ultimoTempoAnimacao >= intervalo) {
                 frameIndex++; ultimoTempoAnimacao = tempoAtualNano;
@@ -164,7 +177,6 @@ public class SalaView extends Application implements Observador {
             }
         }
 
-        //Transição de Cenário
         if (playerHitbox.getBoundsInParent().intersects(transicaoCantina.getBoundsInParent())) {
             gameLoop.stop();
             try {
@@ -186,26 +198,22 @@ public class SalaView extends Application implements Observador {
         boolean statusCiclo = geralController.Atualizador();
 
         if (statusCiclo) {
-            gameLoop.stop(); // Para tudo imediatamente!
-
+            gameLoop.stop();
             Pane containerPrincipal = (Pane) playerView.getParent();
             double larguraDoMapa = 1366.0;
             double alturaDoMapa = 768.0;
 
             caixaDialogo.setVisible(true);
-            textoDialogo.setText("O dia acabou! Luiza está pegando o ônibus de volta para o campus...");
+            textoDialogo.setText("O dia acabou! Luiza está pegando o ônibus de volta para casa...");
 
-            // Toca o vídeo do ônibus e te joga para o Ponto de Ônibus ao terminar
             PassarVideo.tocar("/AnimacaoOnibus.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, () -> {
                 try {
                     PontoDeOnibusView.pontoEntrada = "FIM_DO_DIA";
                     PontoDeOnibusView proximoMapa = new PontoDeOnibusView();
                     proximoMapa.start(stage);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                } catch (Exception e) { e.printStackTrace(); }
             });
-            return; // Corta a execução do frame para evitar bugs visuais
+            return;
         }
         labelRelogio.setText(Relogio.obterTempoFormatado());
     }
@@ -223,17 +231,14 @@ public class SalaView extends Application implements Observador {
         mundoBox.setMaxSize(mapW, mapH);
 
         Group mundoGroup = new Group(mundoBox);
-        StackPane root = new StackPane(mundoGroup);
-        root.setStyle("-fx-background-color: #000000;");
 
-        // Alinha todo o conteúdo no Topo-Esquerdo da janela
-        root.setAlignment(javafx.geometry.Pos.TOP_LEFT);
+        Pane root = new Pane(mundoGroup);
+        root.setStyle("-fx-background-color: #000000;");
 
         Scene scene = new Scene(root, 800, 600);
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/Style.css")).toExternalForm());
         teclado = new Movimento(scene);
 
-        // Inicializa a estratégia de movimento padrão (Livre)
         comportamentoMovimento = new MovimentoLivre();
 
         ImageView mapa = new ImageView(imagemMapa);
@@ -260,6 +265,44 @@ public class SalaView extends Application implements Observador {
         containerEnergia.setLayoutX(20); containerEnergia.setLayoutY(65);
         mundoBox.getChildren().add(containerEnergia);
 
+        Pane hud = new Pane();
+        hud.setPickOnBounds(false);
+
+        painelAtributos = new AtributosView();
+        painelAtributos.setPickOnBounds(true);
+        painelAtributos.setVisible(false);
+        painelAtributos.setLayoutX(1110);
+        painelAtributos.setLayoutY(450);
+        painelAtributos.setPrefWidth(220);
+
+        btnStatus = new Button("Status 📊");
+        btnStatus.setPickOnBounds(true);
+        btnStatus.setLayoutX(1210);
+        btnStatus.setLayoutY(680);
+        btnStatus.setFocusTraversable(false);
+
+        btnStatus.setStyle(
+                "-fx-background-color: #2c3e50;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-family: 'Courier New';" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-font-size: 14px;" +
+                        "-fx-border-color: #7f8c8d;" +
+                        "-fx-border-width: 2;" +
+                        "-fx-border-radius: 4;" +
+                        "-fx-background-radius: 4;" +
+                        "-fx-cursor: hand;"
+        );
+
+        btnStatus.setOnAction(e -> {
+            if (!painelAtributos.isVisible()) {
+                painelAtributos.atualizarValores();
+            }
+            painelAtributos.setVisible(!painelAtributos.isVisible());
+        });
+
+        hud.getChildren().addAll(btnStatus, painelAtributos);
+
         JogoRepository.getJogoAtual().getPlayer().adicionarObservador(this);
         atualizar();
 
@@ -285,6 +328,7 @@ public class SalaView extends Application implements Observador {
         playerHitbox = new Rectangle(0, 0, andarFrente[0].getWidth() * 0.8, andarFrente[0].getHeight() * 0.4);
 
         inicializarCaixaDialogo(mundoBox, mapW, mapH);
+        mundoBox.getChildren().add(hud);
 
         if ("CORREDOR2".equals(pontoEntrada)) {
             playerView.setLayoutX(660.0); playerView.setLayoutY(140.0); ultimaDirecao = Direcao.BAIXO;
@@ -292,7 +336,6 @@ public class SalaView extends Application implements Observador {
             playerView.setLayoutX(660.0); playerView.setLayoutY(580.0); ultimaDirecao = Direcao.CIMA;
         }
 
-        // Cria uma transformação de escala explícita com pivô cravado em (0,0)
         javafx.scene.transform.Scale redimensionamento = new javafx.scene.transform.Scale(1, 1, 0, 0);
         mundoGroup.getTransforms().setAll(redimensionamento);
 
@@ -300,21 +343,27 @@ public class SalaView extends Application implements Observador {
             double janelaW = root.getWidth();
             double janelaH = root.getHeight();
             if (janelaW <= 0 || janelaH <= 0) return;
+
             double zoom = Math.min(janelaW / mapW, janelaH / mapH);
 
             redimensionamento.setX(zoom);
             redimensionamento.setY(zoom);
+
+            double larguraRenderizada = mapW * zoom;
+            double alturaRenderizada = mapH * zoom;
+
+            mundoGroup.setLayoutX((janelaW - larguraRenderizada) / 2.0);
+            mundoGroup.setLayoutY((janelaH - alturaRenderizada) / 2.0);
         };
 
         root.widthProperty().addListener((obs, velho, novo) -> aplicarZoom.run());
         root.heightProperty().addListener((obs, velho, novo) -> aplicarZoom.run());
 
         primaryStage.setScene(scene);
-        if (!primaryStage.isMaximized()) {
-            primaryStage.setWidth(800);
-            primaryStage.setHeight(600);
-        }
-        primaryStage.setMaximized(true);
+
+        primaryStage.setFullScreen(true);
+        primaryStage.setFullScreenExitHint("");
+
         primaryStage.show();
 
         javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.millis(150));
@@ -330,7 +379,7 @@ public class SalaView extends Application implements Observador {
 
     private Rectangle criarObstaculo(double x, double y, double w, double h, Pane root) {
         Rectangle r = new Rectangle(x, y, w, h);
-        r.setFill(Color.rgb(255, 0, 0, 0.5));
+        r.setFill(Color.TRANSPARENT);
         root.getChildren().add(r);
         obstaculos.add(r);
         return r;
@@ -338,7 +387,7 @@ public class SalaView extends Application implements Observador {
 
     private Rectangle criarTransicao(double x, double y, double w, double h, Pane root) {
         Rectangle r = new Rectangle(x, y, w, h);
-        r.setFill(Color.rgb(0, 255, 0, 0.5));
+        r.setFill(Color.TRANSPARENT);
         root.getChildren().add(r);
         return r;
     }

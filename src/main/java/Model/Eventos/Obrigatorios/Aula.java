@@ -15,17 +15,21 @@ public class Aula extends Obrigatorio {
         boolean horarioTarde = (minutosNoJogo >= 840 && minutosNoJogo <= 882);
 
         if (horarioManha || horarioTarde) {
-            jogador.setConhecimento(jogador.getConhecimento() + 25);
-            jogador.setEnergia(jogador.getEnergia() - 30);
+            if (jogador.getEnergia() >= 30) {//vai ver a aula toda
+                jogador.setConhecimento(jogador.getConhecimento() + 25);
+                jogador.setEnergia(jogador.getEnergia() - 30);
+            }else{ // vai ver menos da aula porque dormiu
+                jogador.setConhecimento(jogador.getConhecimento() + 5);
+                jogador.setEnergia(0);
+            }
 
             // CORREÇÃO: Faz o tempo saltar para o FIM da aula!
             if (horarioManha) {
                 // Avança os segundos totais para que o relógio marque exatamente 10:45 (645 minutos)
-                // Fórmula inversa: (MinutosDesejados - 480) / Velocidade
                 Relogio.segundosTotais = (long) ((645 - 480) / Relogio.tickRate);
             } else {
-                // Avança os segundos totais para que o relógio marque exatamente 14:45 (885 minutos)
-                Relogio.segundosTotais = (long) ((885 - 480) / Relogio.tickRate);
+                // Avança os segundos totais para que o relógio marque exatamente 16:45 (1125 minutos)
+                Relogio.segundosTotais = (long) ((1125 - 480) / Relogio.tickRate);
             }
 
             return true; // Retorna true para abrir o diálogo de aula
