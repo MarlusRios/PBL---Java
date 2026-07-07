@@ -16,6 +16,7 @@ public class JogadorService {
         interagiveis.interacao(player);
     }
 
+    //metodo criado para tratar a quantia de possibilidade em cada interação
     public int interagirInt(Jogador player, Interagiveis interagiveis){
         return interagiveis.interacaoInt(player);
     }

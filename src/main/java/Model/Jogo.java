@@ -18,8 +18,8 @@ public class Jogo implements Serializable {
         this.id = id;
         this.player = new Jogador();
         this.time = 7.0;
-        this.semana = 8;
-        this.semestre = 8;
+        this.semana = 1;
+        this.semestre = 1;
     }
 
 

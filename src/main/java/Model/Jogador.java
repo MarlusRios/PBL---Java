@@ -20,7 +20,7 @@ public class Jogador implements Serializable {
     private double dinheiro;
     private double desempenho;
     private int andamento;
-    private transient List<Observador> observadores = new ArrayList<>();
+    private transient List<Observador> observadores = new ArrayList<>(); // lista para a mplementação do observer
 
     public Jogador() {
         this.nome = "Luiza";
@@ -45,7 +45,7 @@ public class Jogador implements Serializable {
 
     public void setEnergia(double energia) {
         this.energia = energia;
-        notificar();
+        notificar();//notifica a energia sempre que é modificada
     }
 
     public double getConhecimento() { return conhecimento; }
@@ -95,6 +95,7 @@ public class Jogador implements Serializable {
         this.andamento = andamento;
     }
 
+    //metodo para a implementação do observer
     private void notificar() {
         if (observadores != null) {
             for (Observador o : observadores) {
@@ -103,6 +104,7 @@ public class Jogador implements Serializable {
         }
     }
 
+    //metodo para adicionar os mapas que precisam implementar a barra de energia
     public void adicionarObservador(Observador o) {
         // Evita que a lista fique nula caso o jogador seja carregado de um arquivo binário
         if (this.observadores == null) {

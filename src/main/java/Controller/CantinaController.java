@@ -12,9 +12,10 @@ public class CantinaController {
     private final JogadorService jogadorService = new JogadorService();
     private final JogoService jogoService = new JogoService();
 
+    //metodo de verificação do estado da compra do salgado na cantina
     public int comprar(){
         Jogo jogo = JogoRepository.getJogoAtual();
         Jogador jogador = jogo.getPlayer();
-        return jogadorService.interagirInt(jogador, new VendedorCantina());
+        return jogadorService.interagirInt(jogador, new VendedorCantina()); //retorna o estado em inteiro
     }
 }

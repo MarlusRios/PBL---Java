@@ -8,7 +8,7 @@ import Controller.Relogio;
 public class FilaGrande extends Aleatorio {
 
     public FilaGrande(){
-        super(0.5);
+        super(0.05);
     }
 
     @Override // Metodo para passar o tempo e deixar o jogador mais triste (fila grande na cantina)

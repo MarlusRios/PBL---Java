@@ -12,9 +12,10 @@ public class CorredorCachorroController {
     private final JogadorService jogadorService = new JogadorService();
     private final JogoService jogoService = new JogoService();
 
+    //metodo para verificar o resultado no carinho no cachorro
     public int carinho(){
         Jogo jogo = JogoRepository.getJogoAtual();
         Jogador jogador = jogo.getPlayer();
-        return jogadorService.interagirInt(jogador, new Cachorro());
+        return jogadorService.interagirInt(jogador, new Cachorro());// retorna o estado em inteiro
     }
 }

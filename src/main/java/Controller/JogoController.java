@@ -21,6 +21,7 @@ public class JogoController {
         return jogo;
     }
 
+    //metodo que vasculha os saves e define por id
     public Jogo carregarPartida(String id) {
         jogoRepository.inicializar();
         Jogo jogo = jogoRepository.buscarPorId(id);
@@ -33,16 +34,19 @@ public class JogoController {
         return jogo;
     }
 
+    //metodo que salva a partida
     public void salvarPartida(Jogo jogo) {
         jogoRepository.inicializar();
         jogoRepository.salvar(jogo);
     }
 
+    //metodo que deleta a partida
     public void deletarPartida(String id) {
         jogoRepository.inicializar();
         jogoRepository.deletar(id);
     }
 
+    //listar todos os saves
     public Collection<Jogo> listarPartidas() {
         jogoRepository.inicializar();
         return jogoRepository.buscarTodos();
