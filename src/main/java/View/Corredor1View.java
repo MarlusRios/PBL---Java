@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+// tela do corredor 1: carinho no cachorro e transições pro ponto de ônibus e pra cantina
 public class Corredor1View extends Application implements Observador {
     private final CorredorCachorroController controller = new CorredorCachorroController();
     private final List<Rectangle> obstaculos = new ArrayList<>();
@@ -70,11 +71,13 @@ public class Corredor1View extends Application implements Observador {
 
     private ComportamentoMovimento comportamentoMovimento;
 
+    // game loop: processa tempo, formatura, movimento, o carinho no cachorro e fim de dia
     private void loopDoJogo(long tempoAtualNano) {
         double velocidad = 1.2;
         boolean estaSeMovendo = false;
         geralController.MudarTempo();
 
+        // verifica se o jogador se formou (ou virou cachorro) antes de continuar o loop
         int statusFormatura = geralController.Formatura();
 
         if (statusFormatura != 0) {
@@ -104,6 +107,7 @@ public class Corredor1View extends Application implements Observador {
             return;
         }
 
+        // delega a movimentação pro comportamento Strategy ativo
         comportamentoMovimento.mover(teclado, playerView, velocidad, obstaculos, playerHitbox);
 
         if (teclado.isEsquerda()) { ultimaDirecao = Direcao.ESQUERDA; estaSeMovendo = true; }
@@ -117,6 +121,7 @@ public class Corredor1View extends Application implements Observador {
         playerHitbox.setX(playerView.getLayoutX() + (larguraPadrao - playerHitbox.getWidth()) / 2);
         playerHitbox.setY(playerView.getLayoutY() + (alturaPadrao - playerHitbox.getHeight()));
 
+        // troca o sprite de acordo com a direção e o frame da animação de caminhada
         if (estaSeMovendo) {
             if (tempoAtualNano - ultimoTempoAnimacao >= intervalo) {
                 frameIndex++; ultimoTempoAnimacao = tempoAtualNano;
@@ -136,6 +141,7 @@ public class Corredor1View extends Application implements Observador {
             }
         }
 
+        // interação com o cachorro: abre o diálogo e consulta o Controller pelo resultado do carinho
         if (playerHitbox.getBoundsInParent().intersects(blocoCachorro.getBoundsInParent())) {
             if (!emDialogo) {
                 emDialogo = true;
@@ -158,6 +164,7 @@ public class Corredor1View extends Application implements Observador {
             }
         }
 
+        // troca de mapa: ponto de ônibus
         if (playerHitbox.getBoundsInParent().intersects(transicaoPonto.getBoundsInParent())) {
             gameLoop.stop();
             try {
@@ -167,6 +174,7 @@ public class Corredor1View extends Application implements Observador {
             } catch (Exception e) { e.printStackTrace(); }
         }
 
+        // troca de mapa: cantina
         if (playerHitbox.getBoundsInParent().intersects(transicaoCantina.getBoundsInParent())) {
             gameLoop.stop();
             try {
@@ -175,6 +183,8 @@ public class Corredor1View extends Application implements Observador {
                 proximoMapa.start(stage);
             } catch (Exception e) { e.printStackTrace(); }
         }
+
+        // verifica se o dia acabou (tempo, saúde ou motivação zeradas) e toca a animação do ônibus
         boolean statusCiclo = geralController.Atualizador();
 
         if (statusCiclo) {
@@ -201,6 +211,7 @@ public class Corredor1View extends Application implements Observador {
         labelRelogio.setText(Relogio.obterTempoFormatado());
     }
 
+    // monta o cenário, HUD, sprites do jogador e inicia o game loop
     @Override
     public void start(Stage primaryStage) {
         this.stage = primaryStage;
@@ -223,6 +234,7 @@ public class Corredor1View extends Application implements Observador {
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/Style.css")).toExternalForm());
         teclado = new Movimento(scene);
 
+        // inicializa o comportamento padrão do Strategy
         comportamentoMovimento = new MovimentoLivre();
 
         ImageView mapa = new ImageView(imagemMapa);
@@ -251,6 +263,7 @@ public class Corredor1View extends Application implements Observador {
         containerEnergia.setLayoutX(20); containerEnergia.setLayoutY(65);
         mundoBox.getChildren().add(containerEnergia);
 
+        // registra a tela como observadora da energia do jogador (padrão Observer)
         JogoRepository.getJogoAtual().getPlayer().adicionarObservador(this);
         atualizar();
 
@@ -274,6 +287,7 @@ public class Corredor1View extends Application implements Observador {
         criarObstaculo(1574.0, 283.5, 67.0, 93.0, mundoBox);
         criarObstaculo(1574.0, 520.5, 64.0, 113.0, mundoBox);
 
+        // sensor de interação com o cachorro
         blocoCachorro = new Rectangle(685.0, 500.0, 90.0, 85.0);
         blocoCachorro.setFill(Color.TRANSPARENT);
         mundoBox.getChildren().add(blocoCachorro);
@@ -288,6 +302,7 @@ public class Corredor1View extends Application implements Observador {
 
         inicializarCaixaDialogo(mundoBox, mapW, mapH);
 
+        // HUD com botão de status e painel de atributos
         Pane hud = new Pane();
         hud.setPickOnBounds(false);
 
@@ -317,6 +332,7 @@ public class Corredor1View extends Application implements Observador {
                         "-fx-cursor: hand;"
         );
 
+        // abre/fecha o painel de atributos, atualizando os valores só quando ele é aberto
         btnStatus.setOnAction(e -> {
             if (!painelAtributos.isVisible()) {
                 painelAtributos.atualizarValores();
@@ -327,6 +343,7 @@ public class Corredor1View extends Application implements Observador {
         hud.getChildren().addAll(btnStatus, painelAtributos);
         mundoBox.getChildren().add(hud);
 
+        // posiciona o jogador de acordo com de onde ele veio
         if ("DIREITA".equals(pontoEntrada)) {
             playerView.setLayoutX(1460.0); playerView.setLayoutY(401.0); ultimaDirecao = Direcao.ESQUERDA;
         } else {
@@ -336,6 +353,7 @@ public class Corredor1View extends Application implements Observador {
         javafx.scene.transform.Scale redimensionamento = new javafx.scene.transform.Scale(1, 1);
         mundoGroup.getTransforms().setAll(redimensionamento);
 
+        // recalcula o zoom do mundo pra caber na janela sempre que ela é redimensionada
         Runnable aplicarZoom = () -> {
             double janelaW = root.getWidth();
             double janelaH = root.getHeight();
@@ -370,6 +388,7 @@ public class Corredor1View extends Application implements Observador {
         gameLoop.start();
     }
 
+    // cria um retângulo invisível de colisão e registra na lista de obstáculos
     private Rectangle criarObstaculo(double x, double y, double w, double h, Pane root) {
         Rectangle r = new Rectangle(x, y, w, h);
         r.setFill(Color.TRANSPARENT);
@@ -378,6 +397,7 @@ public class Corredor1View extends Application implements Observador {
         return r;
     }
 
+    // cria um retângulo invisível usado como sensor de transição de mapa (não colide, só dispara evento)
     private Rectangle criarTransicao(double x, double y, double w, double h, Pane root) {
         Rectangle r = new Rectangle(x, y, w, h);
         r.setFill(Color.TRANSPARENT);
@@ -385,6 +405,7 @@ public class Corredor1View extends Application implements Observador {
         return r;
     }
 
+    // carrega os frames de animação de caminhada nas quatro direções
     private void inicializarImagensAnimacao() {
         andarCostas = new Image[]{
                 new Image(Objects.requireNonNull(getClass().getResourceAsStream("/sprite_BF_parada.png"))),
@@ -408,6 +429,7 @@ public class Corredor1View extends Application implements Observador {
         };
     }
 
+    // monta o painel de diálogo (fundo + label com quebra automática) já posicionado no mapa
     private void inicializarCaixaDialogo(Pane root, double mapW, double mapH) {
         caixaDialogo = new Pane();
         caixaDialogo.setPrefSize(650, 110);
@@ -427,6 +449,7 @@ public class Corredor1View extends Application implements Observador {
         root.getChildren().add(caixaDialogo);
     }
 
+    // callback do Observer: atualiza a barra de energia sempre que o Jogador notifica mudança
     @Override
     public void atualizar() {
         Jogador jogador = JogoRepository.getJogoAtual().getPlayer();

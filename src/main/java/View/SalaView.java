@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+// tela da sala de aula: fala com o professor e vai pra cantina ou corredor 2
 public class SalaView extends Application implements Observador {
     private final SalaController salaController = new SalaController();
     private final List<Rectangle> obstaculos = new ArrayList<>();
@@ -67,11 +68,13 @@ public class SalaView extends Application implements Observador {
 
     private ComportamentoMovimento comportamentoMovimento;
 
+    // game loop: cuida do tempo, se formou, anda, faz prova ou acaba o dia
     private void loopDoJogo(long tempoAtualNano) {
         double velocidade = 1.2;
         boolean estaSeMovendo = false;
         geralController.MudarTempo();
 
+        // ve se formou ou virou cachorro antes de rodar o loop
         int statusFormatura = geralController.Formatura();
 
         if (statusFormatura != 0) {
@@ -114,6 +117,7 @@ public class SalaView extends Application implements Observador {
         playerHitbox.setX(playerView.getLayoutX() + (larguraPadrao - playerHitbox.getWidth()) / 2);
         playerHitbox.setY(playerView.getLayoutY() + (alturaPadrao - playerHitbox.getHeight()));
 
+        // se encostar no professor, abre o dialogo da aula ou projeto
         if (playerHitbox.getBoundsInParent().intersects(blocoProfessor.getBoundsInParent())) {
             if (!emDialogo) {
                 int chat = salaController.conversar();
@@ -132,12 +136,14 @@ public class SalaView extends Application implements Observador {
                 } else if (chat == 0) {
                     textoDialogo.setText("Energia insuficiente");
                 } else {
+                    // comeca o minijogo da prova e trava o player com o strategy parado
                     textoDialogo.setText("Professor: Bom luiza, prova iniciada...");
                     comportamentoMovimento = new MovimentoParado();
 
                     PassarVideo.tocar("/FazendoProva.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, () -> {
                         Controller.Relogio.segundosTotais = (long) (660 / Relogio.tickRate);
 
+                        // mostra se passou ou rodou na prova de acordo com o controller
                         if (salaController.passou()) {
                             textoDialogo.setText("Professor: Bom luiza, prova concluida, parabens!!");
                             PassarVideo.tocar("/Passando.mp4", containerPrincipal, gameLoop, larguraDoMapa, alturaDoMapa, null);
@@ -158,6 +164,7 @@ public class SalaView extends Application implements Observador {
             }
         }
 
+        // muda o sprite dependendo de pra onde ta andando e do frame da animacao
         if (estaSeMovendo) {
             if (tempoAtualNano - ultimoTempoAnimacao >= intervalo) {
                 frameIndex++; ultimoTempoAnimacao = tempoAtualNano;
@@ -177,6 +184,7 @@ public class SalaView extends Application implements Observador {
             }
         }
 
+        // troca de mapa: cantina
         if (playerHitbox.getBoundsInParent().intersects(transicaoCantina.getBoundsInParent())) {
             gameLoop.stop();
             try {
@@ -186,6 +194,7 @@ public class SalaView extends Application implements Observador {
             } catch (Exception e) { e.printStackTrace(); }
         }
 
+        // troca de mapa: corredor 2
         if (playerHitbox.getBoundsInParent().intersects(transicaoCorredor2.getBoundsInParent())) {
             gameLoop.stop();
             try {
@@ -195,6 +204,7 @@ public class SalaView extends Application implements Observador {
             } catch (Exception e) { e.printStackTrace(); }
         }
 
+        // ve se o dia acabou por falta de tempo ou energia e manda o player pra casa
         boolean statusCiclo = geralController.Atualizador();
 
         if (statusCiclo) {
@@ -218,6 +228,7 @@ public class SalaView extends Application implements Observador {
         labelRelogio.setText(Relogio.obterTempoFormatado());
     }
 
+    // monta o mapa, hud, player e comeca o loop
     @Override
     public void start(Stage primaryStage) {
         this.stage = primaryStage;
@@ -244,6 +255,7 @@ public class SalaView extends Application implements Observador {
         ImageView mapa = new ImageView(imagemMapa);
         mundoBox.getChildren().add(mapa);
 
+        // sensor pra falar com o professor
         blocoProfessor = new Rectangle(775, 55, 100, 120);
         blocoProfessor.setFill(Color.TRANSPARENT);
         mundoBox.getChildren().add(blocoProfessor);
@@ -265,6 +277,7 @@ public class SalaView extends Application implements Observador {
         containerEnergia.setLayoutX(20); containerEnergia.setLayoutY(65);
         mundoBox.getChildren().add(containerEnergia);
 
+        // abre e fecha o painel de atributos e atualiza os valores
         Pane hud = new Pane();
         hud.setPickOnBounds(false);
 
@@ -303,9 +316,11 @@ public class SalaView extends Application implements Observador {
 
         hud.getChildren().addAll(btnStatus, painelAtributos);
 
+        // atualiza a barra de energia quando o player muda (observer)
         JogoRepository.getJogoAtual().getPlayer().adicionarObservador(this);
         atualizar();
 
+        // mapeia las carteiras e paredes pro player nao atravessar
         criarObstaculo(136, 214.5, 481, 112, mundoBox);
         criarObstaculo(798, 216.5, 467, 111, mundoBox);
         criarObstaculo(136, 380, 481, 112, mundoBox);
@@ -319,6 +334,7 @@ public class SalaView extends Application implements Observador {
         criarObstaculo(0, 680, 658, 200, mundoBox);
         criarObstaculo(748, 680, 752, 200, mundoBox);
 
+        // sensores invisiveis pra trocar de mapa
         transicaoCantina = criarTransicao(658.0, 690.0, 90.0, 36.0, mundoBox);
         transicaoCorredor2 = criarTransicao(656.0, 103.5, 93.0, 31.0, mundoBox);
 
@@ -330,6 +346,7 @@ public class SalaView extends Application implements Observador {
         inicializarCaixaDialogo(mundoBox, mapW, mapH);
         mundoBox.getChildren().add(hud);
 
+        // poe o player no lugar certo dependendo de onde ele veio
         if ("CORREDOR2".equals(pontoEntrada)) {
             playerView.setLayoutX(660.0); playerView.setLayoutY(140.0); ultimaDirecao = Direcao.BAIXO;
         } else {
@@ -339,6 +356,7 @@ public class SalaView extends Application implements Observador {
         javafx.scene.transform.Scale redimensionamento = new javafx.scene.transform.Scale(1, 1, 0, 0);
         mundoGroup.getTransforms().setAll(redimensionamento);
 
+        // poe o mapa no meio e arruma o zoom pro java fx
         Runnable aplicarZoom = () -> {
             double janelaW = root.getWidth();
             double janelaH = root.getHeight();
@@ -377,6 +395,7 @@ public class SalaView extends Application implements Observador {
         gameLoop.start();
     }
 
+    // cria o quadrado invisivel de colisao e poe na lista
     private Rectangle criarObstaculo(double x, double y, double w, double h, Pane root) {
         Rectangle r = new Rectangle(x, y, w, h);
         r.setFill(Color.TRANSPARENT);
@@ -385,6 +404,7 @@ public class SalaView extends Application implements Observador {
         return r;
     }
 
+    // cria o quadrado invisivel pra mudar de mapa
     private Rectangle criarTransicao(double x, double y, double w, double h, Pane root) {
         Rectangle r = new Rectangle(x, y, w, h);
         r.setFill(Color.TRANSPARENT);
@@ -392,6 +412,7 @@ public class SalaView extends Application implements Observador {
         return r;
     }
 
+    // carrega os frames das animacoes de andar
     private void inicializarImagensAnimacao() {
         andarCostas = new Image[]{
                 new Image(Objects.requireNonNull(getClass().getResourceAsStream("/sprite_BF_parada.png"))),
@@ -415,6 +436,7 @@ public class SalaView extends Application implements Observador {
         };
     }
 
+    // cria a caixa de dialogo la embaixo
     private void inicializarCaixaDialogo(Pane root, double mapW, double mapH) {
         caixaDialogo = new Pane();
         caixaDialogo.setPrefSize(650, 110);
@@ -434,6 +456,7 @@ public class SalaView extends Application implements Observador {
         root.getChildren().add(caixaDialogo);
     }
 
+    // atualiza a barra de energia quando o player muda (observer)
     @Override
     public void atualizar() {
         Jogador jogador = JogoRepository.getJogoAtual().getPlayer();

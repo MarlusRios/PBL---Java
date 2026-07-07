@@ -18,6 +18,7 @@ import javafx.scene.layout.Pane;
 import Controller.JogoController;
 import Model.Jogo;
 
+// tela de menu inicial: criar um novo save ou carregar um existente
 public class JanelaInicial extends Application {
 
     @Override
@@ -54,6 +55,7 @@ public class JanelaInicial extends Application {
         btnNovoJogo.setContentDisplay(ContentDisplay.CENTER);
         btnNovoJogo.setStyle("-fx-background-color: transparent; -fx-padding: 0; -fx-cursor: hand;");
 
+        // ao clicar em "Novo Jogo", troca a cena pra pedir o nome do save
         btnNovoJogo.setOnAction(event -> {
             StackPane telaNomeRoot = new StackPane();
             telaNomeRoot.setStyle("-fx-background-color: cornflowerblue;");
@@ -79,6 +81,7 @@ public class JanelaInicial extends Application {
             txtNome.setStyle("-fx-background-color: transparent; -fx-text-fill: black; -fx-alignment: center;");
             txtNome.setMaxWidth(320);
 
+            // ao confirmar o nome, cria a partida e já manda o jogador pro ponto de ônibus
             txtNome.setOnAction(eventEnter -> {
                 String nomeSave = txtNome.getText().trim();
 
@@ -123,6 +126,7 @@ public class JanelaInicial extends Application {
         });
 
         Button btnCarregarJogo = new Button("Carregar Jogo");
+        // ao clicar em "Carregar Jogo", lista os saves existentes e permite escolher um
         btnCarregarJogo.setOnAction(event -> {
             StackPane telaCarregarRoot = new StackPane();
             telaCarregarRoot.setStyle("-fx-background-color: cornflowerblue;");
@@ -156,6 +160,7 @@ public class JanelaInicial extends Application {
                     btnSave.setContentDisplay(ContentDisplay.CENTER);
                     btnSave.setStyle("-fx-background-color: transparent; -fx-padding: 0; -fx-cursor: hand;");
 
+                    // ao escolher um save da lista, carrega a partida e retoma o jogo no ponto de ônibus
                     btnSave.setOnAction(eventCliqueSave -> {
                         Jogo jogoCarregado = jogoController.carregarPartida(idPartida);
                         System.out.println("Partida carregada! ID: " + jogoCarregado.getId());
@@ -222,7 +227,7 @@ public class JanelaInicial extends Application {
         primaryStage.show();
     }
 
-    // Método auxiliar para gerenciar as propriedades de dimensionamento nativo
+    // método auxiliar para gerenciar as propriedades de tela cheia nativa do Stage
     private void configurarTelaCheiaReal(Stage stage) {
         // Opção A: TELA CHEIA DO JOGO (Padrão Gamer - Ocupa tudo nativamente)
         stage.setFullScreen(true);
