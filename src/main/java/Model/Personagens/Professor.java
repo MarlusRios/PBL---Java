@@ -21,7 +21,6 @@ public class Professor extends Interagiveis {
             return 3;
         }
         if(jogador.getEnergia() >= 5 ){
-        jogador.setConhecimento(5.0);
         jogador.setEnergia(jogador.getEnergia() - 5.0);
         jogador.setMotivacao(jogador.getMotivacao() + 5.0);
         if (opressao.acontece()) {

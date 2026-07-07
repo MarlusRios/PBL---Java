@@ -103,7 +103,7 @@ public class JogoService {
 
     //metodo para verificar se luiza se formou, virou cachorro ou ainda é aluna
     public int verificarFormatura(Jogo jogo) {
-        if( jogo.getPlayer().getAndamento() > 5){
+        if( jogo.getPlayer().getAndamento() >= 5){
             return 1;
         }else if (jogo.getSemestre()>8){
             return 2;

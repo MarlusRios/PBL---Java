@@ -124,11 +124,11 @@ public class SalaView extends Application implements Observador {
                 double alturaDoMapa = 768.0;
 
                 if (chat == 1) {
-                    textoDialogo.setText("Professor: Luiza, que bom que chegou! Pronto para apresentar o projeto? \n\nEnergia - 5\n motivação +5");
+                    textoDialogo.setText("Professor: Luiza, que bom que chegou! Pronto para apresentar o projeto? \n\nEnergia - 5 e motivação +5");
                 } else if (chat == 2) {
                     textoDialogo.setText("Professor: Luiza, voce é muito burra e vai repetir a materia! \n\nEnergia -10\nMotivação -20");
                 } else if (chat == 3) {
-                    textoDialogo.setText("Professor: Bom dia luiza, prota pra aula? \nO tempo passou\nconhecimento +25\nenergia -30");
+                    textoDialogo.setText("Professor: Bom dia luiza, pronta pra aula? \nO tempo passou\nconhecimento +25\nenergia -30");
                 } else if (chat == 0) {
                     textoDialogo.setText("Energia insuficiente");
                 } else {
